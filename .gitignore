@@ -1,0 +1,18 @@
+/.lake/
+/.vscode/*.log
+*.olean
+*.ilean
+*.c
+*.o
+*.trace
+
+# LaTeX build products; keep the paper source and any intentionally tracked PDF.
+*.aux
+*.bbl
+*.blg
+*.fdb_latexmk
+*.fls
+*.log
+*.out
+*.synctex.gz
+*.toc
