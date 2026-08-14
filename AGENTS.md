@@ -16,6 +16,24 @@ inequality used to obtain `t:main`.
 3. State the intended declaration name, module, and dependencies before making
    a broad structural change.
 
+## Autonomy and escalation
+
+- Proceed without asking for permission to inspect repository files, read the
+  paper and blueprint, search Mathlib or the web, edit files within this
+  repository, run Lean/Lake commands, update the blueprint, and inspect Git
+  status or diffs.
+- Autonomously try alternative proof strategies, introduce internal lemmas,
+  refactor implementation details, and repair build failures, provided the
+  public statements of `t:main` and `c:easy` and the project scope remain fixed.
+- Ask the user only when a genuine mathematical or modeling choice would
+  materially affect a formal statement, its assumptions, the interpretation of
+  the paper, or the proof architecture.
+- When blocked technically, exhaust reasonable in-scope alternatives before
+  reporting the blocker.
+- These standing permissions do not authorize destructive changes, access to
+  credentials, dependency or toolchain upgrades, pushing or publishing, or
+  external side effects. Perform those only when separately requested.
+
 ## Build and verification
 
 - Run `lake build` from the repository root before finishing any Lean change.
