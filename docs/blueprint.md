@@ -113,7 +113,7 @@ bookkeeping, not changes to the mathematical statement.
    an epsilon/eventual formulation; no informal `o(k)+o(ℓ)` notation appears in
    a declaration.
 9. **Generalized binomial.** Define `chooseReal x b` by evaluating Mathlib's
-    `Polynomial.descPochhammer ℝ b` at `x` and dividing by `b!`. Its product
+    root-level `descPochhammer ℝ b` at `x` and dividing by `b!`. Its product
     formula is `∏ i < b, (x - i)`. Prove agreement with `Nat.choose` on
     natural inputs before using convexity or `f:binomial`.
 10. **Boundary conventions.** `asymptoticRegion0` uses coordinates in
@@ -157,7 +157,7 @@ is implemented; do not add empty scaffolding.
 | `easyX`, `easyRamseyBoundValue` | `EasyBound` | the auxiliary density and real bound in `t:easy` | implemented; the checked Ramsey theorem uses a natural-floor interface so it implies the exact real inequality without rounding loss |
 | `exists_bipartition_excess_ge` | `EasyBound` | finite bipartition with excess at least the signed-weight cut average | implemented by deterministic vertex induction; replaces the paper's probabilistic phrasing without changing its estimate |
 | `BlueBook` | `BlueBook` | blue clique spine and blue cross-edges | not started |
-| `chooseReal` | `Analysis/Binomial` | generalized real binomial coefficient using Mathlib's descending Pochhammer polynomial | not started |
+| `chooseReal` | `Analysis/Binomial` | generalized real binomial coefficient using Mathlib's descending Pochhammer polynomial | implemented; product formula, natural-input agreement, positivity, and the finite Jensen interface compile |
 | `UniformRamseyExpBound` | `Asymptotics/Uniform` | one explicit little-`o` witness uniform in ratios | not started |
 | `asymptoticRegion0`, `asymptoticRegion` | `AsymptoticRegion` | paper's `𝓡₀` and its closure `𝓡` | not started |
 | `asymptoticRegionInterior` | `AsymptoticRegion` | paper's `𝓡_*` | not started |
@@ -179,8 +179,8 @@ table and their docstrings record the change.
 | `t:easy` | `ramseyBound_easy` | `EasyBound` | `l:easy`; deterministic signed-weight bipartition; induction on `ℓ`; algebraic identity `(1-x)(p-x)=(1-p)^2` | implemented in floor-stable form: `⌊easyRamseyBoundValue p k ℓ⌋₊ ≤ N → RamseyBound k ℓ N` |
 | `c:easy` | `ramseyNumber_le_easy_optimized` | `EasyBound` | `t:easy`; parameter substitution and real algebra | **implemented exact public target** for positive `ℓ ≤ k`; natural and real powers match the printed statement |
 | `l:FpAvg2` | `sum_density_mul_card_redNeighborhood_ge` | `BookInduction` | interedge double count; convexity/Cauchy for squares | not started |
-| `f:binomial` | `chooseReal_lower_bound` or a sufficient replacement | `Analysis/Binomial` | `chooseReal`; log/exponential estimates | open obligation G4; exact paper statement is not required if `l:BBook` is obtained more directly |
-| `l:BBook` | `exists_redClique_or_blueBook` | `BlueBook` | `f:binomial`; finite averaging; Ramsey bound `R(k,m)` | not started after `f:binomial` |
+| `f:binomial` | `chooseReal_lower_bound_four_fifths` | `Analysis/Binomial` | `chooseReal`; elementary descending-product estimate | **implemented as a sufficient replacement:** under the stronger downstream hypothesis `5b² ≤ σm`, the generalized choose is at least `(4/5)σ^b choose(m,b)`; the paper's more general exponential statement is not formalized |
+| `l:BBook` | `exists_redClique_or_blueBook` | `BlueBook` | sufficient generalized-choose bound; finite averaging; Ramsey bound `R(k,m)` | not started; the binomial prerequisite is implemented |
 | `o:r` | `baseline_mem_asymptoticRegion`, `AsymptoticRegion.lower`, `lower_mem_asymptoticRegionInterior`, `mem_asymptoticRegion_of_uniform_bound` | `AsymptoticRegion` | `o:easybound`; closure/interior; Ramsey monotonicity; explicit asymptotics | not started |
 | `l:limit` | `tendsto_bookParameter`, `exists_bookExponent` | `BookInduction` | `Real.log`, `Real.rpow`, standard limits | intentionally generalized to arbitrary `0<p<1`, `0<μ<1`; the use-oriented corollary selects a natural `r ≥ 2` with `p^(1/r)>μ` and the required strict bound |
 | `t:bookmain` | `Candidate.isGood_of_density_card_product` | `BookInduction` | `exists_bookExponent`, `o:r(3)`, `l:BBook`, `l:FpAvg2`, `R(k,m)≤k^m`; induction on `k+t` | not started; formal statement **omits** printed hypothesis `p>μ₀`, strengthening the lemma as agreed |
@@ -240,6 +240,14 @@ Each milestone ends with focused file checks and `lake build`, with no `sorry`,
   `t:general`. This deliberately narrows the abstract theorem and supplies the
   compact-interval uniformity used in its proof. The concrete applications must
   prove continuity of their chosen `M`.
+- **G4 — generalized choose:** `chooseReal` is the root-level Mathlib
+  `descPochhammer` evaluation divided by `b!`. The product formula,
+  natural-input agreement, positivity, and Jensen interface are implemented.
+  Instead of the printed exponential form of `f:binomial`, the development
+  proves `chooseReal_lower_bound_four_fifths` under `5b² ≤ σm`, precisely the
+  stronger regime available in `l:BBook`. Its `4/5` factor combines with the
+  two later `4/5` losses to give `64/125 > 1/2`, so it is sufficient for the
+  paper's blue-book conclusion.
 - **G6:** all of `r:final` is excluded, so neither its endpoint nor its
   unverified AI-generated improvement is a proof obligation.
 - **G7/G8:** the Multicolor section is excluded in full; its typos and omitted
@@ -247,11 +255,6 @@ Each milestone ends with focused file checks and `lake build`, with no `sorry`,
 
 ### Active obligations
 
-- **G4 — generalized choose:** `f:binomial` uses `binom(σm,b)` for a real
-  upper argument without defining it. The chosen semantics is
-  `chooseReal x b = (Polynomial.descPochhammer ℝ b).eval x / b!`. Prove the
-  needed positivity, natural-input agreement, and bound, or bypass this fact
-  with a direct blue-book estimate.
 - **G5 — independent optimization:** do not translate the Mathematica-based
   `lem:numerics` certificate mechanically. Redo the optimization for the Lean
   development and kernel-check sufficient analytic or interval inequalities.
@@ -302,8 +305,8 @@ Useful existing APIs include:
 - `Mathlib.Analysis.SpecialFunctions.Pochhammer`:
   `convexOn_descPochhammer_eval` and especially
   `descPochhammer_eval_div_factorial_le_sum_choose` give the Jensen inequality
-  for the proposed `chooseReal`. The exponential lower bound in
-  `f:binomial` is still a project lemma.
+  for `chooseReal`. The formal replacement for `f:binomial` uses its product
+  formula and an elementary finite-product estimate under `5b² ≤ σm`.
 - `Nat.choose`, `Nat.descFactorial`,
   `Nat.descFactorial_eq_factorial_mul_choose`,
   `Nat.choose_eq_descFactorial_div_factorial`, and choose bounds. These cover
