@@ -156,7 +156,7 @@ is implemented; do not add empty scaffolding.
 | `easyCandidateThreshold` | `EasyBound` | the excess threshold in `l:easy` | implemented in the printed positive-parameter coordinates |
 | `easyX`, `easyRamseyBoundValue` | `EasyBound` | the auxiliary density and real bound in `t:easy` | implemented; the checked Ramsey theorem uses a natural-floor interface so it implies the exact real inequality without rounding loss |
 | `exists_bipartition_excess_ge` | `EasyBound` | finite bipartition with excess at least the signed-weight cut average | implemented by deterministic vertex induction; replaces the paper's probabilistic phrasing without changing its estimate |
-| `BlueBook` | `BlueBook` | blue clique spine and blue cross-edges | not started |
+| `BlueBook` | `BlueBook` | blue clique spine and blue cross-edges | implemented; disjointness, spine extraction, clique extension, and the `Candidate.IsGood` lifting interface compile |
 | `chooseReal` | `Analysis/Binomial` | generalized real binomial coefficient using Mathlib's descending Pochhammer polynomial | implemented; product formula, natural-input agreement, positivity, and the finite Jensen interface compile |
 | `UniformRamseyExpBound` | `Asymptotics/Uniform` | one explicit little-`o` witness uniform in ratios | not started |
 | `asymptoticRegion0`, `asymptoticRegion` | `AsymptoticRegion` | paper's `𝓡₀` and its closure `𝓡` | not started |
@@ -180,7 +180,7 @@ table and their docstrings record the change.
 | `c:easy` | `ramseyNumber_le_easy_optimized` | `EasyBound` | `t:easy`; parameter substitution and real algebra | **implemented exact public target** for positive `ℓ ≤ k`; natural and real powers match the printed statement |
 | `l:FpAvg2` | `sum_density_mul_card_redNeighborhood_ge` | `BookInduction` | interedge double count; convexity/Cauchy for squares | not started |
 | `f:binomial` | `chooseReal_lower_bound_four_fifths` | `Analysis/Binomial` | `chooseReal`; elementary descending-product estimate | **implemented as a sufficient replacement:** under the stronger downstream hypothesis `5b² ≤ σm`, the generalized choose is at least `(4/5)σ^b choose(m,b)`; the paper's more general exponential statement is not formalized |
-| `l:BBook` | `exists_redClique_or_blueBook` | `BlueBook` | sufficient generalized-choose bound; finite averaging; Ramsey bound `R(k,m)` | not started; the binomial prerequisite is implemented |
+| `l:BBook` | `exists_redClique_or_blueBook` | `BlueBook` | sufficient generalized-choose bound; finite powerset averaging and double counting; Ramsey bound `R(k,m)` | **implemented:** omits the unused candidate right side, rewrites `m ≥ 10μ⁻¹b²` equivalently as `10b² ≤ μm`, and strengthens `b ≤ #S` to `#S = b` |
 | `o:r` | `baseline_mem_asymptoticRegion`, `AsymptoticRegion.lower`, `lower_mem_asymptoticRegionInterior`, `mem_asymptoticRegion_of_uniform_bound` | `AsymptoticRegion` | `o:easybound`; closure/interior; Ramsey monotonicity; explicit asymptotics | not started |
 | `l:limit` | `tendsto_bookParameter`, `exists_bookExponent` | `BookInduction` | `Real.log`, `Real.rpow`, standard limits | intentionally generalized to arbitrary `0<p<1`, `0<μ<1`; the use-oriented corollary selects a natural `r ≥ 2` with `p^(1/r)>μ` and the required strict bound |
 | `t:bookmain` | `Candidate.isGood_of_density_card_product` | `BookInduction` | `exists_bookExponent`, `o:r(3)`, `l:BBook`, `l:FpAvg2`, `R(k,m)≤k^m`; induction on `k+t` | not started; formal statement **omits** printed hypothesis `p>μ₀`, strengthening the lemma as agreed |
@@ -302,6 +302,10 @@ Useful existing APIs include:
   finite average estimate without a probability-space dependency.
 - `Finset`/`Fintype`: finite sums, products, cards, filters, products,
   `powersetCard`, and finite averaging.
+- `Mathlib.Combinatorics.Enumerative.DoubleCounting`:
+  `Finset.sum_card_bipartiteAbove_eq_sum_card_bipartiteBelow` identifies the
+  total number of blue-book pages counted by spines and by page vertices in
+  `l:BBook`.
 - `Mathlib.Analysis.SpecialFunctions.Pochhammer`:
   `convexOn_descPochhammer_eval` and especially
   `descPochhammer_eval_div_factorial_le_sum_choose` give the Jensen inequality
