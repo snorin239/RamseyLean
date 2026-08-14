@@ -160,8 +160,8 @@ is implemented; do not add empty scaffolding.
 | `chooseReal` | `Analysis/Binomial` | generalized real binomial coefficient using Mathlib's descending Pochhammer polynomial | implemented; product formula, natural-input agreement, positivity, and the finite Jensen interface compile |
 | `SublinearError`, `UniformRamseyExpWitness` | `Asymptotics/Uniform` | an explicit `o(k)` error and a single witness uniform for `1 ≤ ℓ ≤ k` | implemented; errors compose, rates weaken on `(0,1]`, symmetry and natural-ceiling Ramsey bridges compile |
 | `UniformRamseyExpBound`, `EventuallyUniformRamseyExpBound` | `Asymptotics/Uniform` | equivalent explicit-witness and epsilon/eventual forms of `R(k,ℓ) ≤ exp(F(ℓ/k)k+o(k))` | implemented; the converse uses the finite maximum `uniformRamseyLogError` over all admissible `ℓ` |
-| `asymptoticRegion0`, `asymptoticRegion` | `AsymptoticRegion` | paper's `𝓡₀` and its closure `𝓡` | not started |
-| `asymptoticRegionInterior` | `AsymptoticRegion` | paper's `𝓡_*` | not started |
+| `asymptoticRegion0`, `asymptoticRegion` | `AsymptoticRegion` | paper's `𝓡₀` and its closure `𝓡` | implemented; `𝓡₀` uses positive natural parameters and exact natural inverse powers beyond a `k+ℓ` threshold |
+| `asymptoticRegionInterior` | `AsymptoticRegion` | paper's ambient interior `𝓡_*` | implemented; interior points are proved to lie back in `𝓡₀`, exposing an actual eventual bound for book induction |
 | `entropy`, `g`, `F` | `Numerics` | paper's `h`, `g_b`, and `F_b` | not started |
 | `frontierA`, `frontierB`, `frontierY` | `Frontier` | functions in `lem:frontier` | not started |
 
@@ -182,7 +182,7 @@ table and their docstrings record the change.
 | `l:FpAvg2` | `sum_density_mul_card_redNeighborhood_ge` | `BookInduction` | interedge double count; convexity/Cauchy for squares | not started |
 | `f:binomial` | `chooseReal_lower_bound_four_fifths` | `Analysis/Binomial` | `chooseReal`; elementary descending-product estimate | **implemented as a sufficient replacement:** under the stronger downstream hypothesis `5b² ≤ σm`, the generalized choose is at least `(4/5)σ^b choose(m,b)`; the paper's more general exponential statement is not formalized |
 | `l:BBook` | `exists_redClique_or_blueBook` | `BlueBook` | sufficient generalized-choose bound; finite powerset averaging and double counting; Ramsey bound `R(k,m)` | **implemented:** omits the unused candidate right side, rewrites `m ≥ 10μ⁻¹b²` equivalently as `10b² ≤ μm`, and strengthens `b ≤ #S` to `#S = b` |
-| `o:r` | `baseline_mem_asymptoticRegion`, `AsymptoticRegion.lower`, `lower_mem_asymptoticRegionInterior`, `mem_asymptoticRegion_of_uniform_bound` | `AsymptoticRegion` | `o:easybound`; closure/interior; Ramsey monotonicity; explicit asymptotics | not started |
+| `o:r` | `baseline_mem_asymptoticRegion`, `AsymptoticRegion.lower`, `lower_mem_asymptoticRegionInterior`, `mem_asymptoticRegion_of_uniform_bound` | `AsymptoticRegion` | `o:easybound`; closure/interior; Ramsey symmetry; explicit uniform asymptotics | **implemented:** part (4)'s informal two-variable errors are replaced by one uniform-rate witness and its two supporting-line inequalities, exactly the interface needed by `lem:frontier`; `asymptoticRegionInterior_subset_asymptoticRegion0` is an additional downstream bridge |
 | `l:limit` | `tendsto_bookParameter`, `exists_bookExponent` | `BookInduction` | `Real.log`, `Real.rpow`, standard limits | intentionally generalized to arbitrary `0<p<1`, `0<μ<1`; the use-oriented corollary selects a natural `r ≥ 2` with `p^(1/r)>μ` and the required strict bound |
 | `t:bookmain` | `Candidate.isGood_of_density_card_product` | `BookInduction` | `exists_bookExponent`, `o:r(3)`, `l:BBook`, `l:FpAvg2`, `R(k,m)≤k^m`; induction on `k+t` | not started; formal statement **omits** printed hypothesis `p>μ₀`, strengthening the lemma as agreed |
 | `t:bookCor` | `ramseyBound_of_redDensity` | `Descent` | strengthened `t:bookmain`; maximum cross-density bipartition; openness of `𝓡_*` | not started; can match the printed hypotheses |
@@ -210,9 +210,9 @@ table and their docstrings record the change.
 3. **Book extraction:** settle `chooseReal` and prove `f:binomial`, or replace
    it with a more direct sufficient bound, then prove the blue-book extraction
    needed downstream.
-4. **Asymptotic language:** uniform error witnesses and their epsilon/eventual
-   equivalence are implemented; next prove all parts of `o:r` without informal
-   little-`o` notation.
+4. **Asymptotic language:** complete. Uniform error witnesses, their
+   epsilon/eventual equivalence, the three asymptotic regions, all four parts
+   of `o:r`, and the interior-to-eventual-bound bridge are implemented.
 5. **Book induction:** prove the generalized exponent-selection lemma, then
    prove `t:bookmain` without `p>μ₀` and derive `t:bookCor`.
 6. **Descent/frontier:** prove the support version of `t:general` with
@@ -333,6 +333,9 @@ Useful existing APIs include:
   choose-versus-entropy theorem was found.
 - `Set.closure`, `Set.interior`, product topology, compactness, uniform
   continuity, and finite subcover APIs support `𝓡`, `c:gen`, and the frontier.
+  The checked `o:r` topology proofs use `map_mem_closure`, `interior_mono`,
+  `interior_maximal`, `interior_prod_eq`, and ordered neighborhoods to turn an
+  interior point of `closure 𝓡₀` into a point of `𝓡₀` itself.
 - `norm_num`, `ring_nf`, `linarith`, `nlinarith`, `positivity`, and exact
   rational inequalities can discharge algebraic leaves. The transcendental
   part of the independently reconstructed optimization in G5 will additionally
