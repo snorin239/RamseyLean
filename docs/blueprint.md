@@ -144,7 +144,7 @@ is implemented; do not add empty scaffolding.
 
 | Planned declaration | Module | Meaning | Status |
 |---|---|---|---|
-| `hasRedClique`, `hasBlueClique` | `Coloring` | exact monochromatic cliques via `IsNClique` | not started |
+| `hasCliqueOn`, `hasRedClique`, `hasBlueClique` | `Coloring` | exact monochromatic cliques via `IsNClique`; complement is blue | implemented; restriction, clique-free, and neighborhood-extension interfaces compile |
 | `redInteredgeCount`, `redDensity` | `Counting` | paper's `e_R(X,Y)` and `d(X,Y)` | not started |
 | `excess` | `Counting` | `e_R(X,Y) - p |X||Y|` in `ℝ` | not started |
 | `RamseyBound` | `Ramsey` | universal two-color bound predicate | not started |
