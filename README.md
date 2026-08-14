@@ -32,10 +32,11 @@ incremental.
 - `paper/`: the exact paper source snapshot, PDF, bibliography, and style file.
 - `AGENTS.md`: durable instructions for Codex and other coding agents.
 
-The current target is *Optimizing the CGMS upper bound on Ramsey numbers* by
-Parth Gupta, Ndiamé Ndiaye, Sergey Norin, and Louis Wei. Its complete
-paper-to-Lean inventory, dependency order, source checksum, and known statement
-gaps are recorded in `docs/blueprint.md`.
+The current target is Theorem `t:main` of *Optimizing the CGMS upper bound on
+Ramsey numbers* by Parth Gupta, Ndiamé Ndiaye, Sergey Norin, and Louis Wei.
+Corollary `c:easy` is a second exact-statement target. The Multicolor section
+and `r:final` are out of scope. The dependency order, source checksum, modeling
+decisions, and statement differences are recorded in `docs/blueprint.md`.
 
 ## Everyday commands
 
@@ -68,10 +69,11 @@ merging an upgrade.
 
 For productive Codex tasks, give one bounded goal at a time, for example:
 
-> Formalize paper lemma `l:FpAvg` in the module named by the blueprint. Reuse
-> Mathlib where possible, do not change earlier theorem statements, update the
-> blueprint, and finish with `lake build` passing without `sorry` or new
-> axioms.
+> Prove the next dependency needed for `t:main` in the module named by the
+> blueprint. You may reformulate intermediate paper statements when it
+> materially simplifies the main proof, but preserve `t:main` and `c:easy`,
+> document every difference, and finish with `lake build` passing without
+> `sorry` or new axioms.
 
 Small, compiling commits make proof regressions and Mathlib upgrades much easier
 to diagnose than large section-wide translations.

@@ -23,21 +23,27 @@ If the paper changes, update this section, the inventory, and the checksums in
 
 ## Scope and trust boundary
 
-The target is every labeled mathematical result used to prove `t:main`, plus
-the paper's elementary multicolor extension. Contextual literature claims are
-not formalization targets. In particular:
+The formalization has two public theorem targets:
 
-- `r:final`'s consequence for the verified frontier is in scope after its
-  endpoint issue is resolved.
-- The unverified ChatGPT-generated polynomial and the claimed diagonal base
-  `3.78233...` in `r:final` are explicitly **out of scope**. They must not be
-  imported as an axiom, numerical certificate, or consequence of `t:main`.
-- The later Balister et al. result in the final unlabeled remark is contextual.
-- The Mathematica assertion behind `lem:numerics` is not trusted merely because
-  it appears in the paper. The main theorem becomes verified only after those
-  inequalities have a kernel-checked Lean proof.
-- Cited facts, including `f:binomial`, must be proved in Lean or matched to an
-  existing Mathlib theorem; no placeholder axiom is permitted.
+1. **Primary target:** `t:main`, with exactly the paper's uniform asymptotic
+   meaning described below.
+2. **Second target:** `c:easy`, with the printed mathematical statement
+   unchanged (apart from explicit Lean casts, positivity hypotheses, and
+   `Real.rpow` notation).
+
+Only definitions and intermediate results needed for these targets are in
+scope. Paper labels remain a dependency roadmap, but their formal counterparts
+may be generalized, weakened, strengthened, split, combined, or replaced when
+that materially simplifies the two targets. Every difference and its purpose
+must be recorded here and in the declaration docstring.
+
+The entire Multicolor section, all of `r:final`, and the final contextual
+remark are explicitly out of scope. The printed `lem:numerics` margins are
+also not independent targets: the optimization will be redone for the
+formalization, producing whatever kernel-checked inequalities suffice to prove
+`t:main`. Every fact actually used must be proved in Lean or matched to
+Mathlib; no manuscript assertion, computer output, or placeholder axiom is
+trusted by itself.
 
 ## Exact interpretation of the main theorem
 
@@ -58,55 +64,65 @@ number. A later equivalence transfers it to `ramseyNumber`. Every other
 occurrence of `o(k)` will likewise be replaced by an explicit witness or an
 explicit epsilon/eventual predicate.
 
+## Exact interpretation of `c:easy`
+
+The public theorem `ramseyNumber_le_easy_optimized` will preserve the printed
+corollary:
+
+```text
+∀ k ℓ : ℕ, 0 < ℓ → ℓ ≤ k →
+  (ramseyNumber k ℓ : ℝ) ≤
+    4 * (k + ℓ) *
+      (((√5 + 1) * (k + 2*ℓ)) / (4*ℓ)) ^ ℓ *
+      ((k + 2*ℓ) / k) ^ ((k : ℝ) / 2)
+```
+
+All arithmetic on the right is in `ℝ`; the final power is `Real.rpow`.
+Explicit coercions and the redundant consequence `0 < k` are formal
+bookkeeping, not changes to the mathematical statement.
+
 ## Modeling decisions
 
 1. **Two colors.** A red-blue coloring on a finite vertex type `V` is a
    `SimpleGraph V`: adjacency is red and `Gᶜ` adjacency is blue. This reuses
    symmetry, looplessness, complements, neighborhoods, and clique APIs.
-2. **Multiple colors.** Use Mathlib's
-   `SimpleGraph.TopEdgeLabeling V (Option (Fin c))`, an `EdgeLabeling` of
-   `(⊤ : SimpleGraph V)` whose domain is the complete graph's edge set.
-   `none` is red and `some i` is blue color `i`; `labelGraph` exposes each
-   color to the clique API.
-3. **Cliques.** A monochromatic clique of exactly `n` vertices uses
+2. **Cliques.** A monochromatic clique of exactly `n` vertices uses
    `SimpleGraph.IsNClique n s`. `CliqueFree` and `CliqueFreeOn` are used for
    negated forms.
-4. **Ramsey bounds first.** Define `RamseyBound k ℓ N` as the universal
+3. **Ramsey bounds first.** Define `RamseyBound k ℓ N` as the universal
    red/blue clique property on `Fin N`, prove monotonicity, recurrence, and
    existence, and only then define `ramseyNumber` by minimization.
-5. **Counting and density.** Reuse `SimpleGraph.interedges` and
+4. **Counting and density.** Reuse `SimpleGraph.interedges` and
    `SimpleGraph.edgeDensity`. The latter is rational; paper expressions are
    coerced to `ℝ`. The local `redInteredgeCount` and `redDensity` interfaces
    hide casts. Mathlib already assigns density zero when either finset is
    empty.
-6. **Candidates.** `Candidate G X Y` stores `X.Nonempty`, `Y.Nonempty`, and
+5. **Candidates.** `Candidate G X Y` stores `X.Nonempty`, `Y.Nonempty`, and
    `Disjoint X Y`. Candidate goodness is a separate predicate. Subcandidate
    lemmas must prove nonemptiness rather than silently treating empty sets as
    candidates.
-7. **Powers.** Nonintegral real exponents use `Real.rpow`; natural powers keep
+6. **Powers.** Nonintegral real exponents use `Real.rpow`; natural powers keep
    `Pow.pow`. All bases and denominator side conditions are explicit.
-8. **Natural parameters.** Paper parameters in `ℕ` that mean positive integers
+7. **Natural parameters.** Paper parameters in `ℕ` that mean positive integers
    carry hypotheses such as `0 < k`, `0 < ℓ`, and `0 < t`. This avoids silently
    assigning meaning to Ramsey numbers or `K_0` outside the paper's scope.
-9. **Uniform asymptotics.** Store an explicit error function and a Mathlib
+8. **Uniform asymptotics.** Store an explicit error function and a Mathlib
    `IsLittleO` proof at `atTop`. Two-variable statements use a stated filter or
    an epsilon/eventual formulation; no informal `o(k)+o(ℓ)` notation appears in
    a declaration.
-10. **Generalized binomial.** Define `chooseReal x b` by evaluating Mathlib's
+9. **Generalized binomial.** Define `chooseReal x b` by evaluating Mathlib's
     `Polynomial.descPochhammer ℝ b` at `x` and dividing by `b!`. Its product
     formula is `∏ i < b, (x - i)`. Prove agreement with `Nat.choose` on
     natural inputs before using convexity or `f:binomial`.
-11. **Boundary conventions.** `asymptoticRegion0` uses coordinates in
+10. **Boundary conventions.** `asymptoticRegion0` uses coordinates in
     `(0,1)²`; `asymptoticRegion` is its closure in `ℝ × ℝ`, so boundary points
-    may occur; `asymptoticRegionInterior` is the ambient interior. The frontier
-    function is initially defined only for `0 < x < 1`. Any endpoint extension
-    needs a separate limit/closure lemma.
+    may occur; `asymptoticRegionInterior` is the ambient interior.
 
 ## Planned module graph
 
 | Module | Responsibility | Direct project dependencies |
 |---|---|---|
-| `RamseyLean/Coloring.lean` | two- and multicolor encodings; color graphs and neighborhoods | Mathlib `SimpleGraph` basics |
+| `RamseyLean/Coloring.lean` | red graph, blue complement, clique and neighborhood interfaces | Mathlib `SimpleGraph` basics |
 | `RamseyLean/Counting.lean` | interedge counts, real density, excess, finite sum identities | `Coloring` |
 | `RamseyLean/Ramsey.lean` | `RamseyBound`, monotonicity, recurrence, least Ramsey number | `Coloring` |
 | `RamseyLean/Candidate.lean` | candidates, goodness, subcandidates | `Counting`, `Ramsey` |
@@ -118,9 +134,8 @@ explicit epsilon/eventual predicate.
 | `RamseyLean/BookInduction.lean` | `l:FpAvg2`, `l:limit`, `t:bookmain` | `BlueBook`, `AsymptoticRegion` |
 | `RamseyLean/Descent.lean` | `t:bookCor`, `c:gen`, `t:general` | `BookInduction` |
 | `RamseyLean/Frontier.lean` | frontier construction and `lem:frontier` | `AsymptoticRegion` |
-| `RamseyLean/Numerics.lean` | exact functions and certified slack inequalities | `Frontier` |
-| `RamseyLean/Main.lean` | `t:main` and verified part of `r:final` | `Descent`, `Frontier`, `Numerics` |
-| `RamseyLean/Multicolor.lean` | multicolor definitions and `o:easybound2` through `c:easy2` | `Coloring`, `Counting`, `Ramsey` |
+| `RamseyLean/Numerics.lean` | independently derived optimization and kernel-checked slack inequalities | `Frontier` |
+| `RamseyLean/Main.lean` | exact public statement `t:main` | `Descent`, `Frontier`, `Numerics` |
 
 This is the proposed structure. Create modules only as their first declaration
 is implemented; do not add empty scaffolding.
@@ -129,8 +144,6 @@ is implemented; do not add empty scaffolding.
 
 | Planned declaration | Module | Meaning | Status |
 |---|---|---|---|
-| `Multicoloring` | `Coloring` | local abbreviation for Mathlib `TopEdgeLabeling V (Option (Fin c))` | not started |
-| `Multicoloring.colorGraph` | `Coloring` | local interface to Mathlib `labelGraph` for red or one blue color | not started |
 | `hasRedClique`, `hasBlueClique` | `Coloring` | exact monochromatic cliques via `IsNClique` | not started |
 | `redInteredgeCount`, `redDensity` | `Counting` | paper's `e_R(X,Y)` and `d(X,Y)` | not started |
 | `excess` | `Counting` | `e_R(X,Y) - p |X||Y|` in `ℝ` | not started |
@@ -139,20 +152,19 @@ is implemented; do not add empty scaffolding.
 | `Candidate` | `Candidate` | nonempty disjoint vertex finsets | not started |
 | `Candidate.IsGood` | `Candidate` | paper's `(k,ℓ,t)`-good predicate | not started |
 | `BlueBook` | `BlueBook` | blue clique spine and blue cross-edges | not started |
-| `descendingPochhammer`, `chooseReal` | `Analysis/Binomial` | generalized real binomial coefficient | not started |
+| `chooseReal` | `Analysis/Binomial` | generalized real binomial coefficient using Mathlib's descending Pochhammer polynomial | not started |
 | `UniformRamseyExpBound` | `Asymptotics/Uniform` | one explicit little-`o` witness uniform in ratios | not started |
 | `asymptoticRegion0`, `asymptoticRegion` | `AsymptoticRegion` | paper's `𝓡₀` and its closure `𝓡` | not started |
 | `asymptoticRegionInterior` | `AsymptoticRegion` | paper's `𝓡_*` | not started |
 | `entropy`, `g`, `F` | `Numerics` | paper's `h`, `g_b`, and `F_b` | not started |
 | `frontierA`, `frontierB`, `frontierY` | `Frontier` | functions in `lem:frontier` | not started |
-| `multicolorRamseyBound` | `Multicolor` | universal `c+1`-color Ramsey predicate | not started |
-| `MulticolorCandidate`, `thetaFactor` | `Multicolor` | multicolor candidates and `Θ(ℓ⃗)` | not started |
 
 ## Result inventory
 
-Statuses distinguish a manuscript blocker from ordinary unstarted work. The
-declaration names are planned and may change only with a matching blueprint
-update.
+Only `c:easy` and `t:main` are exact public-statement targets. Other rows are
+support interfaces: their names and statements are provisional and may be
+replaced when doing so shortens or clarifies the target proofs, provided this
+table and their docstrings record the change.
 
 | Paper label | Planned declaration | Module | Direct mathematical dependencies | Status / note |
 |---|---|---|---|---|
@@ -160,89 +172,96 @@ update.
 | `o:easybound` | `ramseyBound_erdosSzekeres` | `EasyBound` | `RamseyBound` recurrence; induction on `k+ℓ` | not started |
 | `l:easy` | `Candidate.isGood_of_excess_ge` | `EasyBound` | `l:FpAvg`, `o:easybound`; induction on `k+t` | not started |
 | `t:easy` | `ramseyBound_easy` | `EasyBound` | `l:easy`; random-bipartition double count; induction on `ℓ`; algebraic identity `(1-x)(p-x)=(1-p)^2` | not started |
-| `c:easy` | `ramseyBound_easy_optimized` | `EasyBound` | `t:easy`; parameter substitution and real algebra | not started |
+| `c:easy` | `ramseyNumber_le_easy_optimized` | `EasyBound` | `t:easy`; parameter substitution and real algebra | **exact public target**; preserve the printed bound for positive `ℓ ≤ k`, making only casts and real powers explicit |
 | `l:FpAvg2` | `sum_density_mul_card_redNeighborhood_ge` | `BookInduction` | interedge double count; convexity/Cauchy for squares | not started |
-| `f:binomial` | `chooseReal_lower_bound` | `Analysis/Binomial` | `chooseReal`; log/exponential estimates | blocked by G4; cited proof is not imported |
+| `f:binomial` | `chooseReal_lower_bound` or a sufficient replacement | `Analysis/Binomial` | `chooseReal`; log/exponential estimates | open obligation G4; exact paper statement is not required if `l:BBook` is obtained more directly |
 | `l:BBook` | `exists_redClique_or_blueBook` | `BlueBook` | `f:binomial`; finite averaging; Ramsey bound `R(k,m)` | not started after `f:binomial` |
 | `o:r` | `baseline_mem_asymptoticRegion`, `AsymptoticRegion.lower`, `lower_mem_asymptoticRegionInterior`, `mem_asymptoticRegion_of_uniform_bound` | `AsymptoticRegion` | `o:easybound`; closure/interior; Ramsey monotonicity; explicit asymptotics | not started |
-| `l:limit` | `tendsto_bookParameter` | `BookInduction` | `Real.log`, `Real.rpow`, standard limits | not started; statement may be generalized per G2 |
-| `t:bookmain` | `Candidate.isGood_of_density_card_product` | `BookInduction` | `l:limit`, `o:r(3)`, `l:BBook`, `l:FpAvg2`, `R(k,m)≤k^m`; induction on `k+t` | blocked by G1 and G2 |
-| `t:bookCor` | `ramseyBound_of_redDensity` | `Descent` | `t:bookmain`; maximum cross-density bipartition; openness of `𝓡_*` | blocked by G2 |
-| `t:general` | `uniformRamseyExpBound_of_descent` | `Descent` | `c:gen`, `t:bookCor`; compactness; small-`ℓ` bound; induction on `ℓ` | blocked by G3 and G9 |
-| `c:gen` | `dense_case_uniform` | `Descent` | `t:bookCor`; finite parameter net; perturbation from `𝓡` to `𝓡_*` | blocked with `t:general` |
+| `l:limit` | `tendsto_bookParameter`, `exists_bookExponent` | `BookInduction` | `Real.log`, `Real.rpow`, standard limits | intentionally generalized to arbitrary `0<p<1`, `0<μ<1`; the use-oriented corollary selects a natural `r ≥ 2` with `p^(1/r)>μ` and the required strict bound |
+| `t:bookmain` | `Candidate.isGood_of_density_card_product` | `BookInduction` | `exists_bookExponent`, `o:r(3)`, `l:BBook`, `l:FpAvg2`, `R(k,m)≤k^m`; induction on `k+t` | not started; formal statement **omits** printed hypothesis `p>μ₀`, strengthening the lemma as agreed |
+| `t:bookCor` | `ramseyBound_of_redDensity` | `Descent` | strengthened `t:bookmain`; maximum cross-density bipartition; openness of `𝓡_*` | not started; can match the printed hypotheses |
+| `t:general` | `uniformRamseyExpBound_of_descent` | `Descent` | `c:gen`, `t:bookCor`; compactness; small-`ℓ` bound; induction on `ℓ` | not started; formal statement adds `Continuous M` as agreed |
+| `c:gen` | `dense_case_uniform` | `Descent` | `t:bookCor`; finite parameter net; continuity of `M`; perturbation from `𝓡` to `𝓡_*` | not started; may be folded into `t:general` |
 | `lem:frontier` | `frontier_mem_asymptoticRegion` | `Frontier` | `o:r(4)`; Ramsey symmetry; strict concavity and monotonicity | not started |
-| `lem:numerics` | `base_slack`, `final_slack` | `Numerics` | exact formulas; certified one-variable inequalities; branch/root isolation | blocked by G5 |
-| `t:main` | `main_uniform`, then `main` | `Main` | two uses of `t:general`; `lem:frontier`; `lem:numerics`; positivity/concavity; uniform Stirling estimate | blocked by G5 and G9 after earlier milestones |
-| `r:final` | `final_frontier_mem_asymptoticRegion` | `Main` | verified `t:main`; `lem:frontier`; optional endpoint closure lemma | partially in scope; G6; AI claim excluded |
-| `o:easybound2` | `multicolorRamseyBound_erdosSzekeres` | `Multicolor` | multicolor Ramsey recurrence; induction on `k+Σℓᵢ` | blocked pending manuscript repair G7 |
-| `l:easy2` | `MulticolorCandidate.isGood_of_excess_ge` | `Multicolor` | `l:FpAvg`, `o:easybound2`; induction on `k+Σtᵢ` | not started after G7 |
-| `t:easy2` | `multicolorRamseyBound_easy` | `Multicolor` | `l:easy2`; multicolor neighborhood induction; `Θ` decrement inequality; bipartition count | blocked pending G8 |
-| `c:easy2` | `multicolorRamseyBound_easy_optimized` | `Multicolor` | `t:easy2`; parameter substitution | not started after G8 |
+| `lem:numerics` | independently designed optimization lemmas | `Numerics` | exact formulas; kernel-checked analytic or interval inequalities | paper statement replaced by a fresh optimization sufficient for `t:main`; open obligation G5 |
+| `t:main` | `main_uniform`, then `main` | `Main` | descent theorem; frontier information; independent optimization; positivity/concavity; uniform Stirling estimate | **primary exact public target**; open obligations G5 and G9 after combinatorial dependencies |
 
-The final unlabeled remark about Balister et al. is recorded as context only and
-receives no Lean declaration.
+### Explicitly excluded results
+
+| Paper material | Reason |
+|---|---|
+| `r:final` in full | outside the requested scope; no endpoint or AI-generated claim will be formalized |
+| `o:easybound2`, `l:easy2`, `t:easy2`, `c:easy2` | the entire Multicolor section is outside scope |
+| final unlabeled remark about Balister et al. | contextual literature discussion, not a target |
 
 ## Dependency milestones
 
 1. **Finite graph interface:** finish `Coloring`, `Counting`, `Ramsey`, and
    `Candidate`; verify complement/clique and interedge identities.
-2. **Easy two-color theorem:** prove through `c:easy`. This gives the first
-   end-to-end checked paper result and seeds `𝓡`.
-3. **Book extraction:** settle `chooseReal` and `f:binomial`, then prove
-   `l:BBook`.
+2. **Exact easy target:** prove through the printed statement of `c:easy` and
+   expose it as `ramseyNumber_le_easy_optimized`. This is the first
+   end-to-end target and also seeds `𝓡`.
+3. **Book extraction:** settle `chooseReal` and prove `f:binomial`, or replace
+   it with a more direct sufficient bound, then prove the blue-book extraction
+   needed downstream.
 4. **Asymptotic language:** implement uniform error witnesses and prove all
    parts of `o:r` without informal little-`o` notation.
-5. **Book induction:** resolve G1/G2 with the authors' intended statement and
-   prove `t:bookmain` and `t:bookCor`.
-6. **Descent/frontier:** resolve G3/G9, then prove `c:gen`, `t:general`, and
-   `lem:frontier`.
-7. **Certified numerics and main theorem:** prove `lem:numerics` in the kernel,
-   derive `t:main`, and only then add the verified part of `r:final`.
-8. **Multicolor branch:** repair G7/G8 and prove the four multicolor results.
+5. **Book induction:** prove the generalized exponent-selection lemma, then
+   prove `t:bookmain` without `p>μ₀` and derive `t:bookCor`.
+6. **Descent/frontier:** prove the support version of `t:general` with
+   `Continuous M`, together with whatever form of `c:gen` and
+   `lem:frontier` best supports the main target.
+7. **Independent optimization and main theorem:** independently derive and
+   kernel-check sufficient parameter/slack inequalities, establish the uniform
+   binomial estimate, and assemble the exact statement of `t:main`.
 
 Each milestone ends with focused file checks and `lake build`, with no `sorry`,
 `admit`, or new axioms.
 
-## Manuscript gaps and required resolutions
+## Scope decisions and remaining proof obligations
 
-- **G1 — incomplete prose.** `paper/main.tex:330` contains the literal marker
-  `INCOMPLETE` and a dangling proof-outline sentence in `t:bookmain`; it also
-  refers to the proof of `c:easy`, where `l:easy` appears intended. The later
-  detailed proof must be audited rather than assuming the outline is complete.
-- **G2 — missing parameter hypothesis.** `t:bookmain` assumes `p > μ₀`, but
-  `t:bookCor` omits `p > μ` and invokes it. The displayed bound on `x` does not
-  imply that inequality. Decide whether to add `p > μ` to the corollary or
-  generalize `l:limit` and `t:bookmain`; do not silently strengthen a paper
-  statement.
-- **G3 — insufficient function regularity.** `t:general` quantifies over
-  arbitrary `M,X,Y`, while its proof chooses uniform perturbations involving
-  `M` on a compact interval. Add the intended continuity/uniform-away-from-one
-  hypotheses, or prove the needed uniform estimate from weaker assumptions.
-- **G4 — generalized choose.** `f:binomial` uses `binom(σm,b)` for a real upper
-  argument and convexity of `x ↦ binom(x,b)` without defining that function.
-  Fix `chooseReal` semantics and the interval on which positivity/convexity is
-  used.
-- **G5 — numerical certificate.** `lem:numerics` cites Mathematica and lists
-  interval/root data but supplies no independently replayable certificate.
-  Reconstruct exact rational/Taylor bounds in Lean or add a separately audited
-  certificate generator whose output Lean checks.
-- **G6 — frontier endpoint and AI claim.** `lem:frontier` defines `Y_f` for
-  `0<x<1`, but `r:final` writes `x∈(0,1]`. Supply an endpoint definition and
-  closure proof or restrict the claim. The subsequent AI polynomial/base claim
-  remains excluded.
-- **G7 — malformed multicolor observation.** `o:easybound2` writes
-  `x + ∑_{i=1}^c ≤ 1`, omitting `y_i`. Its proof says induction on `ℓ` while
-  invoking the case `(k-1,ℓ⃗)`; the intended measure is `k+Σℓᵢ`.
-- **G8 — suppressed multicolor steps.** `t:easy2` uses undefined `R` in
-  `n ≥ floor R` where `Q` is intended. It also omits the `Θ` decrement
-  inequality and most of the bipartition calculation.
-- **G9 — uniform asymptotics and Stirling.** Formalize the assertions
-  `R(k,ℓ)=e^{o(k)}` for `ℓ=o(k)`, the two-variable error in `o:r(4)`, and
-  Stirling uniformly for every `1≤ℓ≤k`. Pointwise asymptotics are insufficient.
-- **G10 — boundaries and rounding.** Fix behavior for `k=0`, `ℓ=0`, empty
+### Resolved decisions
+
+- **G1 — outline prose:** irrelevant to the formalization. The literal
+  `INCOMPLETE` at `paper/main.tex:330` belongs only to the informal outline;
+  it does not qualify or block the detailed proof that follows.
+- **G2 — `p>μ₀`:** remove this unnecessary hypothesis from the formal
+  `t:bookmain`. Generalize `l:limit` to arbitrary `0<p<1`, `0<μ<1`, and
+  derive `exists_bookExponent`: since `p^(1/r) → 1 > μ`, a natural `r≥2`
+  eventually satisfies both `p^(1/r)>μ` and the strict inequality needed by
+  the moment induction. The declaration docstring must note that the formal
+  lemma strengthens the printed one.
+- **G3 — regularity of `M`:** add `Continuous M` to the formal
+  `t:general`. This deliberately narrows the abstract theorem and supplies the
+  compact-interval uniformity used in its proof. The concrete applications must
+  prove continuity of their chosen `M`.
+- **G6:** all of `r:final` is excluded, so neither its endpoint nor its
+  unverified AI-generated improvement is a proof obligation.
+- **G7/G8:** the Multicolor section is excluded in full; its typos and omitted
+  steps are not proof obligations.
+
+### Active obligations
+
+- **G4 — generalized choose:** `f:binomial` uses `binom(σm,b)` for a real
+  upper argument without defining it. The chosen semantics is
+  `chooseReal x b = (Polynomial.descPochhammer ℝ b).eval x / b!`. Prove the
+  needed positivity, natural-input agreement, and bound, or bypass this fact
+  with a direct blue-book estimate.
+- **G5 — independent optimization:** do not translate the Mathematica-based
+  `lem:numerics` certificate mechanically. Redo the optimization for the Lean
+  development and kernel-check sufficient analytic or interval inequalities.
+  The result must recover the exact coefficient function in `t:main`, or first
+  prove a pointwise stronger exponent and then derive the printed bound. The
+  paper's particular intermediate margins are not targets.
+- **G9 — uniform asymptotics and Stirling:** formalize
+  `R(k,ℓ)=e^{o(k)}` in the regime `ℓ=o(k)`, the two-variable error used for
+  `o:r(4)`, and the binomial/Stirling estimate uniformly for every
+  `1≤ℓ≤k`. Pointwise asymptotics are insufficient.
+- **G10 — boundaries and rounding:** fix behavior for `k=0`, `ℓ=0`, empty
   finsets, closure boundary coordinates, real thresholds versus integer graph
-  orders, floors/ceilings, and the minimum Ramsey number. Paper results will
-  carry positive-parameter hypotheses; density remains zero on empty inputs.
+  orders, floors/ceilings, and the minimum Ramsey number. The two public target
+  statements carry positive-parameter hypotheses; density remains zero on
+  empty inputs.
 
 ## Mathlib audit
 
@@ -252,11 +271,6 @@ Useful existing APIs include:
 
 - `Mathlib.Combinatorics.SimpleGraph.Basic`: `SimpleGraph`, complement `Gᶜ`,
   `compl_adj`, `neighborSet`, `induce`, and the complete graph.
-- `Mathlib.Combinatorics.SimpleGraph.Coloring.EdgeLabeling`:
-  `SimpleGraph.EdgeLabeling`, `SimpleGraph.TopEdgeLabeling`, `labelGraph`,
-  `TopEdgeLabeling.labelGraph_adj`, `pullback`, and the two-color conversion
-  lemmas `toTopEdgeLabeling_labelGraph` and
-  `toTopEdgeLabeling_labelGraph_compl`.
 - `Mathlib.Combinatorics.SimpleGraph.Finite`: `edgeFinset`, `neighborFinset`,
   `mem_neighborFinset`, `neighborFinset_compl`, and `degree`.
 - `Mathlib.Combinatorics.SimpleGraph.Clique`: `IsClique`, `IsNClique`,
@@ -304,8 +318,9 @@ Useful existing APIs include:
 - `Set.closure`, `Set.interior`, product topology, compactness, uniform
   continuity, and finite subcover APIs support `𝓡`, `c:gen`, and the frontier.
 - `norm_num`, `ring_nf`, `linarith`, `nlinarith`, `positivity`, and exact
-  rational inequalities can discharge algebraic leaves. They do not by
-  themselves certify the transcendental interval claims in G5.
+  rational inequalities can discharge algebraic leaves. The transcendental
+  part of the independently reconstructed optimization in G5 will additionally
+  need proved analytic bounds or a kernel-checked interval method.
 
 Re-run a focused `#check`/`#find` audit in each module before fixing imports;
 this inventory records available interfaces, not a promise that every needed

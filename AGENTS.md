@@ -2,9 +2,12 @@
 
 ## Objective
 
-Formalize the paper in this repository in Lean 4 with Mathlib. Treat the paper
-as the source for mathematical intent and Lean as the source for the checked
-formal statement.
+Formalize Theorem `t:main` from the paper in this repository in Lean 4 with
+Mathlib. Also formalize Corollary `c:easy` with its printed statement unchanged.
+Do not formalize the Multicolor section or `r:final`. Treat the paper as the
+source for mathematical intent and Lean as the source for the checked formal
+statement. Redo the numerical optimization independently and kernel-check every
+inequality used to obtain `t:main`.
 
 ## Start every task
 
@@ -31,10 +34,12 @@ formal statement.
   explicitly.
 - Prefer small named interface lemmas over long tactic scripts repeated in
   multiple proofs.
-- Give each paper result a docstring containing its paper label and a concise
-  description of any difference from the printed statement.
-- Keep theorem statements separate from proof refactors. Do not strengthen or
-  weaken a previously agreed statement merely to make a proof easier.
+- Give each formalized paper result a docstring containing its paper label and
+  a concise description of any difference from the printed statement.
+- Keep the public statements corresponding to `t:main` and `c:easy` fixed once
+  agreed. Intermediate paper statements may be strengthened, weakened,
+  generalized, split, or replaced when that simplifies the two targets; record
+  every such change and its role in `docs/blueprint.md`.
 - Use namespaces and qualified names to avoid collisions with Mathlib.
 - Import narrowly once a module is stable. During discovery, `import Mathlib`
   is acceptable; use `#min_imports` when practical before finalizing a module.

@@ -18,6 +18,10 @@ Canonical files:
 [formalization blueprint](../docs/blueprint.md) for the theorem inventory,
 modeling choices, dependency order, and manuscript gaps.
 
+The formalization scope is Theorem `t:main` and Corollary `c:easy`, together
+with whatever support results they require. The Multicolor section and
+`r:final` are excluded.
+
 Treat this directory as read-only during formalization. Do not repair typos,
 complete proof prose, or regenerate the PDF as part of a Lean proof task. A
 paper update requires an explicit paper-only change, new checksums, a snapshot
