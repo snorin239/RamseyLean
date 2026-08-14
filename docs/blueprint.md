@@ -95,8 +95,10 @@ bookkeeping, not changes to the mathematical statement.
 4. **Counting and density.** Reuse `SimpleGraph.interedges` and
    `SimpleGraph.edgeDensity`. The latter is rational; paper expressions are
    coerced to `ℝ`. The local `redInteredgeCount` and `redDensity` interfaces
-   hide casts. Mathlib already assigns density zero when either finset is
-   empty.
+   hide casts. `interedges X Y` counts ordered pairs, so it agrees with the
+   paper's crossing-edge count for disjoint candidate sets; in particular,
+   `redDensity G univ univ` is not the usual unordered whole-graph density.
+   Mathlib already assigns density zero when either finset is empty.
 5. **Candidates.** `Candidate G X Y` stores `X.Nonempty`, `Y.Nonempty`, and
    `Disjoint X Y`. Candidate goodness is a separate predicate. Subcandidate
    lemmas must prove nonemptiness rather than silently treating empty sets as
@@ -145,8 +147,8 @@ is implemented; do not add empty scaffolding.
 | Planned declaration | Module | Meaning | Status |
 |---|---|---|---|
 | `hasCliqueOn`, `hasRedClique`, `hasBlueClique` | `Coloring` | exact monochromatic cliques via `IsNClique`; complement is blue | implemented; restriction, clique-free, and neighborhood-extension interfaces compile |
-| `redInteredgeCount`, `redDensity` | `Counting` | paper's `e_R(X,Y)` and `d(X,Y)` | not started |
-| `excess` | `Counting` | `e_R(X,Y) - p |X||Y|` in `ℝ` | not started |
+| `redInteredgeCount`, `redDensity` | `Counting` | paper's `e_R(X,Y)` and `d(X,Y)` | implemented; symmetry, empty-set, bounds, density/count conversion, and restricted-neighborhood sums compile |
+| `excess` | `Counting` | `e_R(X,Y) - p |X||Y|` in `ℝ` | implemented; symmetry, empty-set, density form, and disjoint-union additivity compile |
 | `RamseyBound` | `Ramsey` | universal two-color bound predicate | not started |
 | `ramseyNumber` | `Ramsey` | least `N` satisfying `RamseyBound`, defined later | not started |
 | `Candidate` | `Candidate` | nonempty disjoint vertex finsets | not started |
