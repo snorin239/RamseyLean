@@ -58,11 +58,11 @@ planned theorem must therefore expose one error function, independent of `ℓ`:
       exp (G ((ℓ : ℝ) / k) * k + η k) * (Nat.choose (k + ℓ) ℓ : ℝ)
 ```
 
-The foundational version should use `RamseyBound` and a natural ceiling, so
-the development does not depend prematurely on constructing the least Ramsey
-number. A later equivalence transfers it to `ramseyNumber`. Every other
-occurrence of `o(k)` will likewise be replaced by an explicit witness or an
-explicit epsilon/eventual predicate.
+The finite graph layer uses `RamseyBound`.  At the asymptotic layer, direct
+real inequalities for `ramseyNumber` avoid repeated ceiling losses; every
+explicit uniform witness has a checked natural-ceiling bridge back to
+`RamseyBound`.  Every occurrence of `o(k)` is replaced by one explicit witness
+or an equivalent epsilon/eventual predicate.
 
 ## Exact interpretation of `c:easy`
 
@@ -158,7 +158,8 @@ is implemented; do not add empty scaffolding.
 | `exists_bipartition_excess_ge` | `EasyBound` | finite bipartition with excess at least the signed-weight cut average | implemented by deterministic vertex induction; replaces the paper's probabilistic phrasing without changing its estimate |
 | `BlueBook` | `BlueBook` | blue clique spine and blue cross-edges | implemented; disjointness, spine extraction, clique extension, and the `Candidate.IsGood` lifting interface compile |
 | `chooseReal` | `Analysis/Binomial` | generalized real binomial coefficient using Mathlib's descending Pochhammer polynomial | implemented; product formula, natural-input agreement, positivity, and the finite Jensen interface compile |
-| `UniformRamseyExpBound` | `Asymptotics/Uniform` | one explicit little-`o` witness uniform in ratios | not started |
+| `SublinearError`, `UniformRamseyExpWitness` | `Asymptotics/Uniform` | an explicit `o(k)` error and a single witness uniform for `1 ≤ ℓ ≤ k` | implemented; errors compose, rates weaken on `(0,1]`, symmetry and natural-ceiling Ramsey bridges compile |
+| `UniformRamseyExpBound`, `EventuallyUniformRamseyExpBound` | `Asymptotics/Uniform` | equivalent explicit-witness and epsilon/eventual forms of `R(k,ℓ) ≤ exp(F(ℓ/k)k+o(k))` | implemented; the converse uses the finite maximum `uniformRamseyLogError` over all admissible `ℓ` |
 | `asymptoticRegion0`, `asymptoticRegion` | `AsymptoticRegion` | paper's `𝓡₀` and its closure `𝓡` | not started |
 | `asymptoticRegionInterior` | `AsymptoticRegion` | paper's `𝓡_*` | not started |
 | `entropy`, `g`, `F` | `Numerics` | paper's `h`, `g_b`, and `F_b` | not started |
@@ -209,8 +210,9 @@ table and their docstrings record the change.
 3. **Book extraction:** settle `chooseReal` and prove `f:binomial`, or replace
    it with a more direct sufficient bound, then prove the blue-book extraction
    needed downstream.
-4. **Asymptotic language:** implement uniform error witnesses and prove all
-   parts of `o:r` without informal little-`o` notation.
+4. **Asymptotic language:** uniform error witnesses and their epsilon/eventual
+   equivalence are implemented; next prove all parts of `o:r` without informal
+   little-`o` notation.
 5. **Book induction:** prove the generalized exponent-selection lemma, then
    prove `t:bookmain` without `p>μ₀` and derive `t:bookCor`.
 6. **Descent/frontier:** prove the support version of `t:general` with
@@ -319,7 +321,9 @@ Useful existing APIs include:
   APIs, and standard tendsto lemmas for `l:limit`, descent, and frontier work.
 - `Mathlib.Analysis.Asymptotics`: `IsLittleO`, notation `=o[atTop]`,
   `isLittleO_iff`, and `isLittleO_iff_tendsto`; use these with an explicit
-  error function.
+  error function.  `Finset.sup'` applied to the positive logarithmic Ramsey
+  deficits produces a canonical uniform error and proves equivalence with the
+  epsilon/eventual formulation.
 - `Mathlib.Analysis.SpecialFunctions.Stirling`: `Stirling.stirlingSeq`,
   `Stirling.factorial_isEquivalent_stirling`, and logarithmic/global bounds.
   A new uniform binomial-entropy corollary is still required for G9.
