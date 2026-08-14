@@ -151,8 +151,8 @@ is implemented; do not add empty scaffolding.
 | `excess` | `Counting` | `e_R(X,Y) - p |X||Y|` in `ℝ` | implemented; symmetry, empty-set, density form, and disjoint-union additivity compile |
 | `RamseyBound` | `Ramsey` | universal two-color bound predicate | implemented; finite-set transport, order monotonicity, color symmetry, positive-parameter recurrence, and existence compile |
 | `ramseyNumber` | `Ramsey` | least `N` satisfying `RamseyBound` | implemented by `Nat.find`; specification, minimality, bound equivalence, symmetry, and zero/positive boundary lemmas compile |
-| `Candidate` | `Candidate` | nonempty disjoint vertex finsets | not started |
-| `Candidate.IsGood` | `Candidate` | paper's `(k,ℓ,t)`-good predicate | not started |
+| `Candidate` | `Candidate` | nonempty disjoint vertex finsets | implemented; side-swap, cardinality, explicit-nonempty subcandidate, and positive excess/density interfaces compile |
+| `Candidate.IsGood` | `Candidate` | paper's `(k,ℓ,t)`-good predicate | implemented; enlargement, side-swap, singleton bases, Ramsey-cardinality certificates, and red/blue extension interfaces compile |
 | `BlueBook` | `BlueBook` | blue clique spine and blue cross-edges | not started |
 | `chooseReal` | `Analysis/Binomial` | generalized real binomial coefficient using Mathlib's descending Pochhammer polynomial | not started |
 | `UniformRamseyExpBound` | `Asymptotics/Uniform` | one explicit little-`o` witness uniform in ratios | not started |
