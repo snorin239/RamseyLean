@@ -153,6 +153,9 @@ is implemented; do not add empty scaffolding.
 | `ramseyNumber` | `Ramsey` | least `N` satisfying `RamseyBound` | implemented by `Nat.find`; specification, minimality, bound equivalence, symmetry, and zero/positive boundary lemmas compile |
 | `Candidate` | `Candidate` | nonempty disjoint vertex finsets | implemented; side-swap, cardinality, explicit-nonempty subcandidate, and positive excess/density interfaces compile |
 | `Candidate.IsGood` | `Candidate` | paper's `(k,ℓ,t)`-good predicate | implemented; enlargement, side-swap, singleton bases, Ramsey-cardinality certificates, and red/blue extension interfaces compile |
+| `easyCandidateThreshold` | `EasyBound` | the excess threshold in `l:easy` | implemented in the printed positive-parameter coordinates |
+| `easyX`, `easyRamseyBoundValue` | `EasyBound` | the auxiliary density and real bound in `t:easy` | implemented; the checked Ramsey theorem uses a natural-floor interface so it implies the exact real inequality without rounding loss |
+| `exists_bipartition_excess_ge` | `EasyBound` | finite bipartition with excess at least the signed-weight cut average | implemented by deterministic vertex induction; replaces the paper's probabilistic phrasing without changing its estimate |
 | `BlueBook` | `BlueBook` | blue clique spine and blue cross-edges | not started |
 | `chooseReal` | `Analysis/Binomial` | generalized real binomial coefficient using Mathlib's descending Pochhammer polynomial | not started |
 | `UniformRamseyExpBound` | `Asymptotics/Uniform` | one explicit little-`o` witness uniform in ratios | not started |
@@ -170,11 +173,11 @@ table and their docstrings record the change.
 
 | Paper label | Planned declaration | Module | Direct mathematical dependencies | Status / note |
 |---|---|---|---|---|
-| `l:FpAvg` | `sum_excess_redNeighborhood_ge` | `EasyBound` | `excess`; interedge double count; sum of squares | not started; first proof target |
-| `o:easybound` | `ramseyBound_erdosSzekeres` | `EasyBound` | `RamseyBound` recurrence; induction on `k+ℓ` | not started |
-| `l:easy` | `Candidate.isGood_of_excess_ge` | `EasyBound` | `l:FpAvg`, `o:easybound`; induction on `k+t` | not started |
-| `t:easy` | `ramseyBound_easy` | `EasyBound` | `l:easy`; random-bipartition double count; induction on `ℓ`; algebraic identity `(1-x)(p-x)=(1-p)^2` | not started |
-| `c:easy` | `ramseyNumber_le_easy_optimized` | `EasyBound` | `t:easy`; parameter substitution and real algebra | **exact public target**; preserve the printed bound for positive `ℓ ≤ k`, making only casts and real powers explicit |
+| `l:FpAvg` | `sum_excess_redNeighborhood_ge` | `EasyBound` | `excess`; interedge double count; sum of squares | implemented; paper hypotheses are retained in the public signature although the square identity proves a stronger unrestricted statement |
+| `o:easybound` | `ramseyBound_erdosSzekeres` | `EasyBound` | `RamseyBound` recurrence; induction on `k+ℓ` | implemented as the paper's real inequality for `ramseyNumber` |
+| `l:easy` | `Candidate.isGood_of_excess_ge` | `EasyBound` | `l:FpAvg`, `o:easybound`; induction on `k+t` | implemented; branches directly on the two child thresholds, an equivalent strengthening that avoids quotient bookkeeping |
+| `t:easy` | `ramseyBound_easy` | `EasyBound` | `l:easy`; deterministic signed-weight bipartition; induction on `ℓ`; algebraic identity `(1-x)(p-x)=(1-p)^2` | implemented in floor-stable form: `⌊easyRamseyBoundValue p k ℓ⌋₊ ≤ N → RamseyBound k ℓ N` |
+| `c:easy` | `ramseyNumber_le_easy_optimized` | `EasyBound` | `t:easy`; parameter substitution and real algebra | **implemented exact public target** for positive `ℓ ≤ k`; natural and real powers match the printed statement |
 | `l:FpAvg2` | `sum_density_mul_card_redNeighborhood_ge` | `BookInduction` | interedge double count; convexity/Cauchy for squares | not started |
 | `f:binomial` | `chooseReal_lower_bound` or a sufficient replacement | `Analysis/Binomial` | `chooseReal`; log/exponential estimates | open obligation G4; exact paper statement is not required if `l:BBook` is obtained more directly |
 | `l:BBook` | `exists_redClique_or_blueBook` | `BlueBook` | `f:binomial`; finite averaging; Ramsey bound `R(k,m)` | not started after `f:binomial` |
@@ -290,12 +293,12 @@ Useful existing APIs include:
   `sq_sum_le_card_mul_sum_sq`, `pow_sum_div_card_le_sum_pow`, and
   `sum_div_card_sq_le_sum_sq_div_card` support the square-convexity step in
   `l:FpAvg2`.
-- `Mathlib.Algebra.BigOperators.Expect`: finite expectation and average
-  identities can encode the random bipartition in `t:easy` without a measure
-  space.
+- The random bipartition in `t:easy` is formalized instead by a deterministic
+  signed-weight cut induction: when a vertex is inserted, place it on the side
+  giving the larger of its two crossing contributions. This proves the same
+  finite average estimate without a probability-space dependency.
 - `Finset`/`Fintype`: finite sums, products, cards, filters, products,
-  `powersetCard`, and finite averaging. Prefer finite double counting over
-  introducing probability spaces for random bipartitions.
+  `powersetCard`, and finite averaging.
 - `Mathlib.Analysis.SpecialFunctions.Pochhammer`:
   `convexOn_descPochhammer_eval` and especially
   `descPochhammer_eval_div_factorial_le_sum_choose` give the Jensen inequality

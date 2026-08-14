@@ -1,6 +1,7 @@
 import RamseyLean.Counting
 import RamseyLean.Ramsey
 import RamseyLean.Candidate
+import RamseyLean.EasyBound
 
 /-!
 This is the root module for the formalization. Add an import here when a module
