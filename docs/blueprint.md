@@ -149,8 +149,8 @@ is implemented; do not add empty scaffolding.
 | `hasCliqueOn`, `hasRedClique`, `hasBlueClique` | `Coloring` | exact monochromatic cliques via `IsNClique`; complement is blue | implemented; restriction, clique-free, and neighborhood-extension interfaces compile |
 | `redInteredgeCount`, `redDensity` | `Counting` | paper's `e_R(X,Y)` and `d(X,Y)` | implemented; symmetry, empty-set, bounds, density/count conversion, and restricted-neighborhood sums compile |
 | `excess` | `Counting` | `e_R(X,Y) - p |X||Y|` in `ℝ` | implemented; symmetry, empty-set, density form, and disjoint-union additivity compile |
-| `RamseyBound` | `Ramsey` | universal two-color bound predicate | not started |
-| `ramseyNumber` | `Ramsey` | least `N` satisfying `RamseyBound`, defined later | not started |
+| `RamseyBound` | `Ramsey` | universal two-color bound predicate | implemented; finite-set transport, order monotonicity, color symmetry, positive-parameter recurrence, and existence compile |
+| `ramseyNumber` | `Ramsey` | least `N` satisfying `RamseyBound` | implemented by `Nat.find`; specification, minimality, bound equivalence, symmetry, and zero/positive boundary lemmas compile |
 | `Candidate` | `Candidate` | nonempty disjoint vertex finsets | not started |
 | `Candidate.IsGood` | `Candidate` | paper's `(k,ℓ,t)`-good predicate | not started |
 | `BlueBook` | `BlueBook` | blue clique spine and blue cross-edges | not started |
