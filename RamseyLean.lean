@@ -6,6 +6,7 @@ import RamseyLean.Analysis.Binomial
 import RamseyLean.BlueBook
 import RamseyLean.Asymptotics.Uniform
 import RamseyLean.AsymptoticRegion
+import RamseyLean.BookInduction
 
 /-!
 This is the root module for the formalization. Add an import here when a module

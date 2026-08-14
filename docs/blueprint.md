@@ -162,6 +162,9 @@ is implemented; do not add empty scaffolding.
 | `UniformRamseyExpBound`, `EventuallyUniformRamseyExpBound` | `Asymptotics/Uniform` | equivalent explicit-witness and epsilon/eventual forms of `R(k,ℓ) ≤ exp(F(ℓ/k)k+o(k))` | implemented; the converse uses the finite maximum `uniformRamseyLogError` over all admissible `ℓ` |
 | `asymptoticRegion0`, `asymptoticRegion` | `AsymptoticRegion` | paper's `𝓡₀` and its closure `𝓡` | implemented; `𝓡₀` uses positive natural parameters and exact natural inverse powers beyond a `k+ℓ` threshold |
 | `asymptoticRegionInterior` | `AsymptoticRegion` | paper's ambient interior `𝓡_*` | implemented; interior points are proved to lie back in `𝓡₀`, exposing an actual eventual bound for book induction |
+| `bookMoment`, `redRegularCore` | `BookInduction` | the moment invariant and one-shot degree-regularized core used in `t:bookmain` | implemented; `exists_redDegreeRegularized` replaces the paper's iterative deletion while preserving the exact moment and hereditary density |
+| `BookSlack`, `BookAsymptoticScaleBounds` | `BookInduction` | graph-independent analytic slack and the logarithmic spine/page schedule estimates | implemented; one cutoff controls the initial loss, blue-book gain, exceptional Ramsey set, and local error |
+| `BookInductionData`, `BookInductionBounds`, `concreteBookInductionData` | `BookInduction` | abstract finite induction interface and its concrete realization | implemented; the minimum-left-size floor is absorbed by using the schedule at `ℓ - 1` and increasing the final cutoff by one |
 | `entropy`, `g`, `F` | `Numerics` | paper's `h`, `g_b`, and `F_b` | not started |
 | `frontierA`, `frontierB`, `frontierY` | `Frontier` | functions in `lem:frontier` | not started |
 
@@ -179,12 +182,12 @@ table and their docstrings record the change.
 | `l:easy` | `Candidate.isGood_of_excess_ge` | `EasyBound` | `l:FpAvg`, `o:easybound`; induction on `k+t` | implemented; branches directly on the two child thresholds, an equivalent strengthening that avoids quotient bookkeeping |
 | `t:easy` | `ramseyBound_easy` | `EasyBound` | `l:easy`; deterministic signed-weight bipartition; induction on `ℓ`; algebraic identity `(1-x)(p-x)=(1-p)^2` | implemented in floor-stable form: `⌊easyRamseyBoundValue p k ℓ⌋₊ ≤ N → RamseyBound k ℓ N` |
 | `c:easy` | `ramseyNumber_le_easy_optimized` | `EasyBound` | `t:easy`; parameter substitution and real algebra | **implemented exact public target** for positive `ℓ ≤ k`; natural and real powers match the printed statement |
-| `l:FpAvg2` | `sum_density_mul_card_redNeighborhood_ge` | `BookInduction` | interedge double count; convexity/Cauchy for squares | not started |
+| `l:FpAvg2` | `sum_density_mul_card_redNeighborhood_ge` | `BookInduction` | `l:FpAvg`; interedge double count; density/count conversion | **implemented:** obtained from the excess-averaging inequality at `p = d(X,Y)`, with empty-right-safe conversion helpers |
 | `f:binomial` | `chooseReal_lower_bound_four_fifths` | `Analysis/Binomial` | `chooseReal`; elementary descending-product estimate | **implemented as a sufficient replacement:** under the stronger downstream hypothesis `5b² ≤ σm`, the generalized choose is at least `(4/5)σ^b choose(m,b)`; the paper's more general exponential statement is not formalized |
 | `l:BBook` | `exists_redClique_or_blueBook` | `BlueBook` | sufficient generalized-choose bound; finite powerset averaging and double counting; Ramsey bound `R(k,m)` | **implemented:** omits the unused candidate right side, rewrites `m ≥ 10μ⁻¹b²` equivalently as `10b² ≤ μm`, and strengthens `b ≤ #S` to `#S = b` |
 | `o:r` | `baseline_mem_asymptoticRegion`, `AsymptoticRegion.lower`, `lower_mem_asymptoticRegionInterior`, `mem_asymptoticRegion_of_uniform_bound` | `AsymptoticRegion` | `o:easybound`; closure/interior; Ramsey symmetry; explicit uniform asymptotics | **implemented:** part (4)'s informal two-variable errors are replaced by one uniform-rate witness and its two supporting-line inequalities, exactly the interface needed by `lem:frontier`; `asymptoticRegionInterior_subset_asymptoticRegion0` is an additional downstream bridge |
-| `l:limit` | `tendsto_bookParameter`, `exists_bookExponent` | `BookInduction` | `Real.log`, `Real.rpow`, standard limits | intentionally generalized to arbitrary `0<p<1`, `0<μ<1`; the use-oriented corollary selects a natural `r ≥ 2` with `p^(1/r)>μ` and the required strict bound |
-| `t:bookmain` | `Candidate.isGood_of_density_card_product` | `BookInduction` | `exists_bookExponent`, `o:r(3)`, `l:BBook`, `l:FpAvg2`, `R(k,m)≤k^m`; induction on `k+t` | not started; formal statement **omits** printed hypothesis `p>μ₀`, strengthening the lemma as agreed |
+| `l:limit` | `tendsto_bookParameter`, `exists_bookExponent` | `BookInduction` | `Real.log`, `Real.rpow`, standard limits | **implemented and generalized** to arbitrary `0<p<1`, `0<μ<1`; the use-oriented corollary selects a natural `r ≥ 2` with `p^(1/r)>μ` and the required strict bound |
+| `t:bookmain` | `Candidate.isGood_of_density_card_product` | `BookInduction` | `exists_bookSlack`, `BookAsymptoticScaleBounds`, `o:r(3)`, `l:BBook`, `l:FpAvg2`, `ramseyNumber_le_pow_first`; strong induction on `k+t` | **implemented:** the cutoff is chosen before the graph and vertex type, hence is graph-independent; the formal theorem strengthens the printed statement by omitting the unnecessary hypothesis `p>μ₀` |
 | `t:bookCor` | `ramseyBound_of_redDensity` | `Descent` | strengthened `t:bookmain`; maximum cross-density bipartition; openness of `𝓡_*` | not started; can match the printed hypotheses |
 | `t:general` | `uniformRamseyExpBound_of_descent` | `Descent` | `c:gen`, `t:bookCor`; compactness; small-`ℓ` bound; induction on `ℓ` | not started; formal statement adds `Continuous M` as agreed |
 | `c:gen` | `dense_case_uniform` | `Descent` | `t:bookCor`; finite parameter net; continuity of `M`; perturbation from `𝓡` to `𝓡_*` | not started; may be folded into `t:general` |
@@ -213,8 +216,10 @@ table and their docstrings record the change.
 4. **Asymptotic language:** complete. Uniform error witnesses, their
    epsilon/eventual equivalence, the three asymptotic regions, all four parts
    of `o:r`, and the interior-to-eventual-bound bridge are implemented.
-5. **Book induction:** prove the generalized exponent-selection lemma, then
-   prove `t:bookmain` without `p>μ₀` and derive `t:bookCor`.
+5. **Book induction:** complete through `t:bookmain`, including generalized
+   exponent selection, density averaging, one-shot degree regularization,
+   logarithmic schedules, and the finite strong-induction engine. Next derive
+   `t:bookCor`.
 6. **Descent/frontier:** prove the support version of `t:general` with
    `Continuous M`, together with whatever form of `c:gen` and
    `lem:frontier` best supports the main target.
@@ -232,12 +237,17 @@ Each milestone ends with focused file checks and `lake build`, with no `sorry`,
 - **G1 — outline prose:** irrelevant to the formalization. The literal
   `INCOMPLETE` at `paper/main.tex:330` belongs only to the informal outline;
   it does not qualify or block the detailed proof that follows.
-- **G2 — `p>μ₀`:** remove this unnecessary hypothesis from the formal
-  `t:bookmain`. Generalize `l:limit` to arbitrary `0<p<1`, `0<μ<1`, and
-  derive `exists_bookExponent`: since `p^(1/r) → 1 > μ`, a natural `r≥2`
-  eventually satisfies both `p^(1/r)>μ` and the strict inequality needed by
-  the moment induction. The declaration docstring must note that the formal
-  lemma strengthens the printed one.
+- **G2 — `p>μ₀`:** the formal `t:bookmain` omits this unnecessary hypothesis.
+  The generalized `exists_bookExponent`, valid for arbitrary `0<p<1` and
+  `0<μ<1`, supplies a natural `r≥2` with both `p^(1/r)>μ` and the strict
+  inequality needed by the moment induction. The theorem docstring records
+  that this omission strengthens the printed lemma.
+- **Book-induction bookkeeping:** the formal proof replaces the paper's
+  iterative deletion with the one-shot `redRegularCore`. Its capped-profile
+  argument uses the exact sufficient cutoff
+  `μ₀+2ε < (μ₀+ε)/(μ₀+x₀+2ε)`, weaker than the paper's auxiliary cutoff. The
+  concrete minimum-left-size is `⌊(1+ε)^(n+ℓ)⌋₊`; estimates at `ℓ-1` and a
+  one-step larger final cutoff absorb the floor without changing `t:bookmain`.
 - **G3 — regularity of `M`:** add `Continuous M` to the formal
   `t:general`. This deliberately narrows the abstract theorem and supplies the
   compact-interval uniformity used in its proof. The concrete applications must
