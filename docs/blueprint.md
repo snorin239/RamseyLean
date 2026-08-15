@@ -96,9 +96,11 @@ bookkeeping, not changes to the mathematical statement.
    `SimpleGraph.edgeDensity`. The latter is rational; paper expressions are
    coerced to `ℝ`. The local `redInteredgeCount` and `redDensity` interfaces
    hide casts. `interedges X Y` counts ordered pairs, so it agrees with the
-   paper's crossing-edge count for disjoint candidate sets; in particular,
-   `redDensity G univ univ` is not the usual unordered whole-graph density.
-   Mathlib already assigns density zero when either finset is empty.
+   paper's crossing-edge count for disjoint candidate sets. The descent layer's
+   `redGraphDensity` uses the degree sum divided by `N(N-1)`, which is the usual
+   unordered whole-graph density by handshaking; in particular,
+   `redDensity G univ univ` is not that density because its denominator is
+   `N²`. Mathlib already assigns local density zero when either finset is empty.
 5. **Candidates.** `Candidate G X Y` stores `X.Nonempty`, `Y.Nonempty`, and
    `Disjoint X Y`. Candidate goodness is a separate predicate. Subcandidate
    lemmas must prove nonemptiness rather than silently treating empty sets as
@@ -165,6 +167,8 @@ is implemented; do not add empty scaffolding.
 | `bookMoment`, `redRegularCore` | `BookInduction` | the moment invariant and one-shot degree-regularized core used in `t:bookmain` | implemented; `exists_redDegreeRegularized` replaces the paper's iterative deletion while preserving the exact moment and hereditary density |
 | `BookSlack`, `BookAsymptoticScaleBounds` | `BookInduction` | graph-independent analytic slack and the logarithmic spine/page schedule estimates | implemented; one cutoff controls the initial loss, blue-book gain, exceptional Ramsey set, and local error |
 | `BookInductionData`, `BookInductionBounds`, `concreteBookInductionData` | `BookInduction` | abstract finite induction interface and its concrete realization | implemented; the minimum-left-size floor is absorbed by using the schedule at `ℓ - 1` and increasing the final cutoff by one |
+| `redGraphDensity`, `bookCorThreshold` | `Descent` | usual whole-graph red density and the printed square-root order threshold in `t:bookCor` | implemented; whole density uses the degree sum over `N(N-1)`, while the threshold squares to the natural-power product consumed by book induction |
+| `denseCaseExponent`, `exists_small_ratio_erdosSzekeres`, `exists_compl_degree_gt_of_redGraphDensity_lt` | `Descent` | logarithmic book rate, exact small-ratio base case, and sparse-branch blue-degree averaging | implemented; these isolate the analytic and graph interfaces used by `c:gen` and `t:general`, with the small-ratio bound valid for every positive parameter pair and no asymptotic cutoff |
 | `entropy`, `g`, `F` | `Numerics` | paper's `h`, `g_b`, and `F_b` | not started |
 | `frontierA`, `frontierB`, `frontierY` | `Frontier` | functions in `lem:frontier` | not started |
 
@@ -188,9 +192,9 @@ table and their docstrings record the change.
 | `o:r` | `baseline_mem_asymptoticRegion`, `AsymptoticRegion.lower`, `lower_mem_asymptoticRegionInterior`, `mem_asymptoticRegion_of_uniform_bound` | `AsymptoticRegion` | `o:easybound`; closure/interior; Ramsey symmetry; explicit uniform asymptotics | **implemented:** part (4)'s informal two-variable errors are replaced by one uniform-rate witness and its two supporting-line inequalities, exactly the interface needed by `lem:frontier`; `asymptoticRegionInterior_subset_asymptoticRegion0` is an additional downstream bridge |
 | `l:limit` | `tendsto_bookParameter`, `exists_bookExponent` | `BookInduction` | `Real.log`, `Real.rpow`, standard limits | **implemented and generalized** to arbitrary `0<p<1`, `0<μ<1`; the use-oriented corollary selects a natural `r ≥ 2` with `p^(1/r)>μ` and the required strict bound |
 | `t:bookmain` | `Candidate.isGood_of_density_card_product` | `BookInduction` | `exists_bookSlack`, `BookAsymptoticScaleBounds`, `o:r(3)`, `l:BBook`, `l:FpAvg2`, `ramseyNumber_le_pow_first`; strong induction on `k+t` | **implemented:** the cutoff is chosen before the graph and vertex type, hence is graph-independent; the formal theorem strengthens the printed statement by omitting the unnecessary hypothesis `p>μ₀` |
-| `t:bookCor` | `ramseyBound_of_redDensity` | `Descent` | strengthened `t:bookmain`; maximum cross-density bipartition; openness of `𝓡_*` | not started; can match the printed hypotheses |
-| `t:general` | `uniformRamseyExpBound_of_descent` | `Descent` | `c:gen`, `t:bookCor`; compactness; small-`ℓ` bound; induction on `ℓ` | not started; formal statement adds `Continuous M` as agreed |
-| `c:gen` | `dense_case_uniform` | `Descent` | `t:bookCor`; finite parameter net; continuity of `M`; perturbation from `𝓡` to `𝓡_*` | not started; may be folded into `t:general` |
+| `t:bookCor` | `ramseyBound_of_redDensity` | `Descent` | strengthened `t:bookmain`; quantitative excess bipartition; openness of `𝓡_*` | **implemented:** the graph-local theorem is generalized from `Fin N` to any finite vertex type and keeps the printed density and real order hypotheses; instead of the paper's balanced maximum-density cut, it applies `exists_bipartition_excess_ge` at a nearby `p₀ < p`, whose positive excess forces a constant-fraction candidate product, then absorbs that fixed loss by perturbing `y` upward inside `𝓡_*` |
+| `t:general` | `uniformRamseyExpBound_of_descent` | `Descent` | `c:gen`, `t:bookCor`; compactness; weighted Erdős--Szekeres; mean value theorem; strong induction on `ℓ` | **implemented:** the formal statement represents `F'` by an explicit continuous-on-`(0,1]` slope function `D` and `HasDerivAt F (D r) r`, represents the positive codomain of `F` by pointwise nonnegativity, and retains the agreed `ContinuousOn M (Ioc 0 1)` hypothesis; `exists_small_ratio_erdosSzekeres` handles small ratios exactly, while compact uniform continuity of `D`, `exists_compl_degree_gt_of_redGraphDensity_lt`, and a floor-stable mean-value estimate implement the sparse blue-neighborhood induction |
+| `c:gen` | `dense_case_uniform` | `Descent` | `t:bookCor`; compact finite subcover; perturbation from `𝓡` to `𝓡_*` | **implemented and graph-generalized:** `D` is an explicit slope function and the theorem works on any finite vertex type; each ratio chooses frozen nearby book parameters, a relative neighborhood, and a local cutoff, after which a finite subcover supplies one positive density slack and one cutoff; this avoids the manuscript's unproved uniform perturbation of `M` and additionally returns `2δ < D(r)` uniformly |
 | `lem:frontier` | `frontier_mem_asymptoticRegion` | `Frontier` | `o:r(4)`; Ramsey symmetry; strict concavity and monotonicity | not started |
 | `lem:numerics` | independently designed optimization lemmas | `Numerics` | exact formulas; kernel-checked analytic or interval inequalities | paper statement replaced by a fresh optimization sufficient for `t:main`; open obligation G5 |
 | `t:main` | `main_uniform`, then `main` | `Main` | descent theorem; frontier information; independent optimization; positivity/concavity; uniform Stirling estimate | **primary exact public target**; open obligations G5 and G9 after combinatorial dependencies |
@@ -216,13 +220,13 @@ table and their docstrings record the change.
 4. **Asymptotic language:** complete. Uniform error witnesses, their
    epsilon/eventual equivalence, the three asymptotic regions, all four parts
    of `o:r`, and the interior-to-eventual-bound bridge are implemented.
-5. **Book induction:** complete through `t:bookmain`, including generalized
+5. **Book induction and dense corollary:** complete through `t:bookCor`, including generalized
    exponent selection, density averaging, one-shot degree regularization,
-   logarithmic schedules, and the finite strong-induction engine. Next derive
-   `t:bookCor`.
-6. **Descent/frontier:** prove the support version of `t:general` with
-   `Continuous M`, together with whatever form of `c:gen` and
-   `lem:frontier` best supports the main target.
+   logarithmic schedules, the finite strong-induction engine, and the
+   quantitative-excess descent from a dense whole graph to a candidate.
+6. **Descent/frontier:** the support version of `t:general`, including
+   `c:gen`, is implemented with the agreed relative continuity hypothesis on
+   `M`; prove `lem:frontier` in the form best supporting the main target.
 7. **Independent optimization and main theorem:** independently derive and
    kernel-check sufficient parameter/slack inequalities, establish the uniform
    binomial estimate, and assemble the exact statement of `t:main`.
@@ -248,10 +252,12 @@ Each milestone ends with focused file checks and `lake build`, with no `sorry`,
   `μ₀+2ε < (μ₀+ε)/(μ₀+x₀+2ε)`, weaker than the paper's auxiliary cutoff. The
   concrete minimum-left-size is `⌊(1+ε)^(n+ℓ)⌋₊`; estimates at `ℓ-1` and a
   one-step larger final cutoff absorb the floor without changing `t:bookmain`.
-- **G3 — regularity of `M`:** add `Continuous M` to the formal
-  `t:general`. This deliberately narrows the abstract theorem and supplies the
-  compact-interval uniformity used in its proof. The concrete applications must
-  prove continuity of their chosen `M`.
+- **G3 — regularity of `M`:** the formal `t:general` retains the agreed
+  hypothesis `ContinuousOn M (Ioc 0 1)`, so concrete applications must prove
+  this relative continuity. The implemented proof is actually stronger: its
+  compact finite subcover freezes `M`, `X`, and `Y` separately at each anchor,
+  eliminating the manuscript's unsupported uniform perturbation and leaving
+  the `M`-continuity hypothesis unused inside `c:gen`.
 - **G4 — generalized choose:** `chooseReal` is the root-level Mathlib
   `descPochhammer` evaluation divided by `b!`. The product formula,
   natural-input agreement, positivity, and Jensen interface are implemented.
@@ -273,10 +279,11 @@ Each milestone ends with focused file checks and `lake build`, with no `sorry`,
   The result must recover the exact coefficient function in `t:main`, or first
   prove a pointwise stronger exponent and then derive the printed bound. The
   paper's particular intermediate margins are not targets.
-- **G9 — uniform asymptotics and Stirling:** formalize
-  `R(k,ℓ)=e^{o(k)}` in the regime `ℓ=o(k)`, the two-variable error used for
-  `o:r(4)`, and the binomial/Stirling estimate uniformly for every
-  `1≤ℓ≤k`. Pointwise asymptotics are insufficient.
+- **G9 — uniform binomial/Stirling estimate:** the small-ratio input to
+  `t:general` is now the exact all-parameter weighted Erdős--Szekeres lemma
+  `exists_small_ratio_erdosSzekeres`, and `o:r(4)` already uses the explicit
+  uniform witness interface. The remaining obligation is the binomial/Stirling
+  estimate uniformly for every `1≤ℓ≤k`; pointwise asymptotics are insufficient.
 - **G10 — boundaries and rounding:** fix behavior for `k=0`, `ℓ=0`, empty
   finsets, closure boundary coordinates, real thresholds versus integer graph
   orders, floors/ceilings, and the minimum Ramsey number. The two public target
