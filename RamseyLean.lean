@@ -8,6 +8,7 @@ import RamseyLean.Asymptotics.Uniform
 import RamseyLean.AsymptoticRegion
 import RamseyLean.BookInduction
 import RamseyLean.Descent
+import RamseyLean.Frontier
 
 /-!
 This is the root module for the formalization. Add an import here when a module

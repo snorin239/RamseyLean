@@ -170,7 +170,7 @@ is implemented; do not add empty scaffolding.
 | `redGraphDensity`, `bookCorThreshold` | `Descent` | usual whole-graph red density and the printed square-root order threshold in `t:bookCor` | implemented; whole density uses the degree sum over `N(N-1)`, while the threshold squares to the natural-power product consumed by book induction |
 | `denseCaseExponent`, `exists_small_ratio_erdosSzekeres`, `exists_compl_degree_gt_of_redGraphDensity_lt` | `Descent` | logarithmic book rate, exact small-ratio base case, and sparse-branch blue-degree averaging | implemented; these isolate the analytic and graph interfaces used by `c:gen` and `t:general`, with the small-ratio bound valid for every positive parameter pair and no asymptotic cutoff |
 | `entropy`, `g`, `F` | `Numerics` | paper's `h`, `g_b`, and `F_b` | not started |
-| `frontierA`, `frontierB`, `frontierY` | `Frontier` | functions in `lem:frontier` | not started |
+| `frontierA`, `frontierB`, `frontierY` | `Frontier` | functions in `lem:frontier` | implemented; the outer branches choose parameters from explicit level-set preimages, while public branch lemmas expose the resulting equations for numerical use |
 
 ## Result inventory
 
@@ -195,7 +195,7 @@ table and their docstrings record the change.
 | `t:bookCor` | `ramseyBound_of_redDensity` | `Descent` | strengthened `t:bookmain`; quantitative excess bipartition; openness of `𝓡_*` | **implemented:** the graph-local theorem is generalized from `Fin N` to any finite vertex type and keeps the printed density and real order hypotheses; instead of the paper's balanced maximum-density cut, it applies `exists_bipartition_excess_ge` at a nearby `p₀ < p`, whose positive excess forces a constant-fraction candidate product, then absorbs that fixed loss by perturbing `y` upward inside `𝓡_*` |
 | `t:general` | `uniformRamseyExpBound_of_descent` | `Descent` | `c:gen`, `t:bookCor`; compactness; weighted Erdős--Szekeres; mean value theorem; strong induction on `ℓ` | **implemented:** the formal statement represents `F'` by an explicit continuous-on-`(0,1]` slope function `D` and `HasDerivAt F (D r) r`, represents the positive codomain of `F` by pointwise nonnegativity, and retains the agreed `ContinuousOn M (Ioc 0 1)` hypothesis; `exists_small_ratio_erdosSzekeres` handles small ratios exactly, while compact uniform continuity of `D`, `exists_compl_degree_gt_of_redGraphDensity_lt`, and a floor-stable mean-value estimate implement the sparse blue-neighborhood induction |
 | `c:gen` | `dense_case_uniform` | `Descent` | `t:bookCor`; compact finite subcover; perturbation from `𝓡` to `𝓡_*` | **implemented and graph-generalized:** `D` is an explicit slope function and the theorem works on any finite vertex type; each ratio chooses frozen nearby book parameters, a relative neighborhood, and a local cutoff, after which a finite subcover supplies one positive density slack and one cutoff; this avoids the manuscript's unproved uniform perturbation of `M` and additionally returns `2δ < D(r)` uniformly |
-| `lem:frontier` | `frontier_mem_asymptoticRegion` | `Frontier` | `o:r(4)`; Ramsey symmetry; strict concavity and monotonicity | not started |
+| `lem:frontier` | `frontier_mem_asymptoticRegion` | `Frontier` | `o:r(4)`; Ramsey symmetry; strict concavity and range hypotheses | **implemented:** `concaveOn_le_tangentLine` supplies the supporting-line estimate, the two parametric outer points and the hyperbolic middle segment are proved separately, and the printed piecewise `frontierY` is assembled using direct preimage hypotheses formalizing the manuscript's informal endpoint-range language |
 | `lem:numerics` | independently designed optimization lemmas | `Numerics` | exact formulas; kernel-checked analytic or interval inequalities | paper statement replaced by a fresh optimization sufficient for `t:main`; open obligation G5 |
 | `t:main` | `main_uniform`, then `main` | `Main` | descent theorem; frontier information; independent optimization; positivity/concavity; uniform Stirling estimate | **primary exact public target**; open obligations G5 and G9 after combinatorial dependencies |
 
@@ -224,9 +224,10 @@ table and their docstrings record the change.
    exponent selection, density averaging, one-shot degree regularization,
    logarithmic schedules, the finite strong-induction engine, and the
    quantitative-excess descent from a dense whole graph to a candidate.
-6. **Descent/frontier:** the support version of `t:general`, including
+6. **Descent/frontier:** complete. The support version of `t:general`, including
    `c:gen`, is implemented with the agreed relative continuity hypothesis on
-   `M`; prove `lem:frontier` in the form best supporting the main target.
+   `M`, and `lem:frontier` provides the piecewise frontier together with
+   explicit branch relations for the numerical milestone.
 7. **Independent optimization and main theorem:** independently derive and
    kernel-check sufficient parameter/slack inequalities, establish the uniform
    binomial estimate, and assemble the exact statement of `t:main`.
@@ -266,6 +267,13 @@ Each milestone ends with focused file checks and `lake build`, with no `sorry`,
   stronger regime available in `l:BBook`. Its `4/5` factor combines with the
   two later `4/5` losses to give `64/125 > 1/2`, so it is sufficient for the
   paper's blue-book conclusion.
+- **Frontier range language:** the paper's statements that `A` increases from
+  `0` to `A(1)` and `B` decreases from `1` to `B(1)` are represented by the
+  exact preimage hypotheses used by the outer branches of `frontierY`, together
+  with the pointwise unit-range hypothesis for `B`. Strict concavity and the
+  explicit derivative function supply the supporting-line estimates. This
+  avoids extending `F` or its derivative to `0` and exposes relational branch
+  lemmas for later interval verification.
 - **G6:** all of `r:final` is excluded, so neither its endpoint nor its
   unverified AI-generated improvement is a proof obligation.
 - **G7/G8:** the Multicolor section is excluded in full; its typos and omitted
