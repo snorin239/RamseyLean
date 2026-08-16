@@ -1,84 +1,163 @@
-# RamseyLean
+# Optimizing the CGMS upper bound on Ramsey numbers in Lean
 
-Lean 4 formalization of the paper stored in this repository. The project uses
-Mathlib and pins both Lean and Mathlib to `v4.32.1` for reproducible builds.
+This repository contains a Lean 4 + Mathlib formalization of Theorem 1 and
+Corollary 6 of Parth Gupta, Ndiamé Ndiaye, Sergey Norin, and Louis Wei,
+[*Optimizing the CGMS upper bound on Ramsey
+numbers*](paper/main.pdf). An earlier version is available as
+[arXiv:2407.19026](https://arxiv.org/abs/2407.19026). The bundled PDF is the
+latest version and is the source for all statement wording and numbering
+below.
 
-## First-time setup
+## The statements being formalized
 
-1. Install [Git](https://git-scm.com/) and
-   [VS Code](https://code.visualstudio.com/).
-2. Install [Elan](https://lean-lang.org/install/) and the official
-   `leanprover.lean4` VS Code extension.
-3. From the repository root, run:
+The Ramsey number `R(k, ℓ)` is the least `N` such that every red-blue coloring
+of the complete graph on `N` vertices contains either a red `K_k` or a blue
+`K_ℓ`. The development represents a coloring by its red graph, with blue edges
+given by the complement:
 
-   ```powershell
-   lake update
-   lake exe cache get
-   lake build
-   ```
+```lean
+def RamseyBound (k ℓ N : ℕ) : Prop :=
+  ∀ G : SimpleGraph (Fin N),
+    hasRedClique G Finset.univ k ∨ hasBlueClique G Finset.univ ℓ
 
-4. Open the repository root in VS Code. Open a `.lean` file and check that the
-   Lean InfoView reports no errors.
+noncomputable def ramseyNumber (k ℓ : ℕ) : ℕ := by
+  classical
+  exact Nat.find (exists_ramseyBound k ℓ)
 
-Elan reads `lean-toolchain`, so no global Lean version needs to be selected.
-The first dependency/cache download can take several minutes; later builds are
-incremental.
+def ramseyLinearScale (k : ℕ) : ℝ := k
 
-## Repository layout
-
-- `RamseyLean/`: Lean source modules.
-- `RamseyLean.lean`: root module; import completed project modules here.
-- `docs/blueprint.md`: theorem inventory, dependencies, and paper-to-Lean map.
-- `paper/`: the exact paper source snapshot, PDF, bibliography, and style file.
-- `AGENTS.md`: durable instructions for Codex and other coding agents.
-
-The completed formalization proves Theorem `t:main` of *Optimizing the CGMS
-upper bound on Ramsey numbers* by Parth Gupta, Ndiamé Ndiaye, Sergey Norin, and
-Louis Wei, together with the exact printed statement of Corollary `c:easy`.
-The Multicolor section and `r:final` are intentionally out of scope. The
-dependency order, source checksum, modeling decisions, and statement
-differences are recorded in `docs/blueprint.md`.
-
-## Everyday commands
-
-```powershell
-# Check the whole formalization
-lake build
-
-# Check one file while iterating
-lake env lean RamseyLean/Basic.lean
-
-# Update within the versions pinned by lakefile.toml
-lake update
-lake exe cache get
+def SublinearError (η : ℕ → ℝ) : Prop :=
+  η =o[atTop] ramseyLinearScale
 ```
 
-Change the Mathlib revision and `lean-toolchain` together in a dedicated commit.
-Run `lake update`, commit the resulting `lake-manifest.json`, and rebuild before
-merging an upgrade.
+Thus `SublinearError η` says that `η(k) = o(k)` as `k → ∞`.
 
-## Recommended formalization loop
+### Theorem 1
 
-1. Pick one dependency-ready row in `docs/blueprint.md`.
-2. Read its paper passage and inspect nearby Lean declarations.
-3. Search Mathlib before introducing local definitions or bridge lemmas.
-4. Fix the declaration type before asking Codex for the proof.
-5. Keep the task to one result or one reusable support lemma.
-6. Run a focused file check while iterating and `lake build` before committing.
-7. Record every statement mismatch, new dependency, or blocker in the blueprint.
-8. Remove exploratory `example` blocks before committing.
+For all positive integers `ℓ ≤ k`,
 
-For productive Codex tasks, give one bounded goal at a time, for example:
+$$
+R(k,\ell) \leq
+\exp\!\left(G(\ell/k)k+o(k)\right)\binom{k+\ell}{\ell},
+\qquad
+G(\lambda)=\left(-\frac14\lambda+\frac{3}{100}\lambda^2
++\frac{2}{25}\lambda^3\right)e^{-\lambda}.
+$$
 
-> Prove the next dependency needed for `t:main` in the module named by the
-> blueprint. You may reformulate intermediate paper statements when it
-> materially simplifies the main proof, but preserve `t:main` and `c:easy`,
-> document every difference, and finish with `lake build` passing without
-> `sorry` or new axioms.
+The Lean theorem makes the uniform meaning of `o(k)` explicit: a single error
+function `η`, independent of `ℓ`, works simultaneously for every positive
+`ℓ ≤ k`.
 
-Small, compiling commits make proof regressions and Mathlib upgrades much easier
-to diagnose than large section-wide translations.
+```lean
+theorem main :
+    ∃ η : ℕ → ℝ,
+      SublinearError η ∧
+      ∀ k ℓ : ℕ, 0 < ℓ → ℓ ≤ k →
+        (ramseyNumber k ℓ : ℝ) ≤
+          Real.exp
+              (((-(1 / 4 : ℝ) * ((ℓ : ℝ) / (k : ℝ)) +
+                    (3 / 100 : ℝ) * ((ℓ : ℝ) / (k : ℝ)) ^ 2 +
+                    (2 / 25 : ℝ) * ((ℓ : ℝ) / (k : ℝ)) ^ 3) *
+                  Real.exp (-((ℓ : ℝ) / (k : ℝ)))) *
+                (k : ℝ) + η k) *
+            (Nat.choose (k + ℓ) ℓ : ℝ)
+```
 
-After making the baseline commit, independent discovery or proof tasks can run
-in separate Codex worktrees. Avoid parallel edits to the same foundational
-module; merge shared interfaces before starting proofs that depend on them.
+The decimal coefficients in the paper are represented by the exact rational
+numbers `1/4`, `3/100`, and `2/25`.
+
+### Corollary 6
+
+For all positive integers `ℓ ≤ k`,
+
+$$
+R(k,\ell) \leq
+4(k+\ell)
+\left(\frac{(\sqrt5+1)(k+2\ell)}{4\ell}\right)^\ell
+\left(\frac{k+2\ell}{k}\right)^{k/2}.
+$$
+
+Its printed statement is exposed directly as follows:
+
+```lean
+theorem ramseyNumber_le_easy_optimized {k ℓ : ℕ}
+    (hℓ : 0 < ℓ) (hℓk : ℓ ≤ k) :
+    (ramseyNumber k ℓ : ℝ) ≤
+      4 * ((k : ℝ) + (ℓ : ℝ)) *
+        (((Real.sqrt 5 + 1) * ((k : ℝ) + 2 * (ℓ : ℝ))) /
+          (4 * (ℓ : ℝ))) ^ ℓ *
+        (((k : ℝ) + 2 * (ℓ : ℝ)) / (k : ℝ)) ^ ((k : ℝ) / 2)
+```
+
+The power indexed by `ℓ` is a natural power. The final power is `Real.rpow`,
+as required by the real exponent `k/2`, including when `k` is odd.
+
+## Structure of the proof
+
+1. **Finite graph foundations.** Ramsey bounds are defined using a graph and
+   its complement, and the usual recurrence and finite counting identities
+   are proved.
+2. **The elementary excess argument.** Candidate and excess inequalities are
+   combined with a deterministic weighted bipartition argument to prove
+   Corollary 6.
+3. **Book induction.** Generalized binomial estimates, blue-book extraction,
+   degree regularization, and uniform asymptotic bounds provide the main
+   book-induction result.
+4. **Descent and the frontier.** Dense and sparse cases are assembled into a
+   uniform descent theorem, and a concave frontier construction feeds stronger
+   Ramsey bounds into a second descent.
+5. **Certified numerical optimization.** Independently selected parameters and
+   kernel-checked interval certificates establish the exponential correction
+   in Theorem 1.
+6. **Final assembly.** A uniform one-sided Stirling estimate converts the
+   exponential entropy bound into the binomial form stated in Theorem 1.
+
+The revised manuscript and the Lean development agree on the relevant
+parameter conditions: Lemma 11 assumes `0 < p` and `μ < 1`, while Lemma 12
+assumes `0 < μ₀, x₀, y₀, p < 1` and has no extra `p > μ₀` hypothesis. Other
+intermediate results are sometimes strengthened, generalized, or replaced by
+sufficient statements better suited to Lean; see
+[`FORMALIZATION.md`](FORMALIZATION.md) for the paper-to-Lean map.
+
+## Certified numerical optimization
+
+The numerical optimization was redone independently for this formalization.
+The manuscript's Mathematica-assisted certificate is not imported as proof
+evidence. Instead, the development proves soundness theorems for fixed-point
+interval arithmetic, Taylor enclosures, and outward rounding. Certificate
+endpoints and checker decisions are exact integers; floating-point sampling
+was used only to choose parameters and meshes. Every inequality used to reach
+Theorem 1 is ultimately checked by Lean's kernel.
+
+## Scope
+
+The repository formalizes Theorem 1 and Corollary 6 together with the results
+needed for their proofs. Remark 17, including its preliminary unverified
+further optimization, and Section 5 (Observation 18 through Remark 22) are
+intentionally outside scope.
+
+## Building
+
+The project pins Lean and Mathlib to `v4.32.1`. After installing
+[Elan](https://lean-lang.org/install/) and Git, run from the repository root:
+
+```text
+lake exe cache get
+lake build
+```
+
+The root target checks the complete formalization, including the concrete
+numerical certificates. No external numerical program or untrusted generated
+output is needed during the build.
+
+## Verification
+
+The full `lake build` succeeds. The Lean source contains no `sorry`, `admit`,
+or user-declared placeholder axioms. For both `RamseyLean.main` and
+`RamseyLean.ramseyNumber_le_easy_optimized`, `#print axioms` reports only
+`propext`, `Classical.choice`, and `Quot.sound`.
+
+## Attribution
+
+This formalization, including its documentation, was produced by OpenAI Codex
+(GPT-5.6 Sol, Ultra reasoning), with minimal guidance from the paper's authors.
