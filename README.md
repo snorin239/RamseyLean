@@ -32,11 +32,12 @@ incremental.
 - `paper/`: the exact paper source snapshot, PDF, bibliography, and style file.
 - `AGENTS.md`: durable instructions for Codex and other coding agents.
 
-The current target is Theorem `t:main` of *Optimizing the CGMS upper bound on
-Ramsey numbers* by Parth Gupta, Ndiamé Ndiaye, Sergey Norin, and Louis Wei.
-Corollary `c:easy` is a second exact-statement target. The Multicolor section
-and `r:final` are out of scope. The dependency order, source checksum, modeling
-decisions, and statement differences are recorded in `docs/blueprint.md`.
+The completed formalization proves Theorem `t:main` of *Optimizing the CGMS
+upper bound on Ramsey numbers* by Parth Gupta, Ndiamé Ndiaye, Sergey Norin, and
+Louis Wei, together with the exact printed statement of Corollary `c:easy`.
+The Multicolor section and `r:final` are intentionally out of scope. The
+dependency order, source checksum, modeling decisions, and statement
+differences are recorded in `docs/blueprint.md`.
 
 ## Everyday commands
 

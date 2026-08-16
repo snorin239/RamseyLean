@@ -23,7 +23,7 @@ If the paper changes, update this section, the inventory, and the checksums in
 
 ## Scope and trust boundary
 
-The formalization has two public theorem targets:
+The completed formalization has two public theorem targets:
 
 1. **Primary target:** `t:main`, with exactly the paper's uniform asymptotic
    meaning described below.
@@ -48,7 +48,7 @@ trusted by itself.
 ## Exact interpretation of the main theorem
 
 The footnote following `t:main` makes its `o(k)` uniform in `1 ≤ ℓ ≤ k`. The
-planned theorem must therefore expose one error function, independent of `ℓ`:
+completed theorem therefore exposes one error function, independent of `ℓ`:
 
 ```text
 ∃ η : ℕ → ℝ,
@@ -66,7 +66,7 @@ or an equivalent epsilon/eventual predicate.
 
 ## Exact interpretation of `c:easy`
 
-The public theorem `ramseyNumber_le_easy_optimized` will preserve the printed
+The public theorem `ramseyNumber_le_easy_optimized` preserves the printed
 corollary:
 
 ```text
@@ -122,7 +122,7 @@ bookkeeping, not changes to the mathematical statement.
     `(0,1)²`; `asymptoticRegion` is its closure in `ℝ × ℝ`, so boundary points
     may occur; `asymptoticRegionInterior` is the ambient interior.
 
-## Planned module graph
+## Implemented module graph
 
 | Module | Responsibility | Direct project dependencies |
 |---|---|---|
@@ -147,12 +147,12 @@ bookkeeping, not changes to the mathematical statement.
 | `RamseyLean/Numerics.lean` | public assembly of the independently derived final uniform exponential bound | numerical certificate modules |
 | `RamseyLean/Main.lean` | uniform binomial-entropy estimate and exact public statement `t:main` | `Numerics`; Mathlib `Stirling` |
 
-This is the proposed structure. Create modules only as their first declaration
-is implemented; do not add empty scaffolding.
+This is the implemented module structure; every listed module contains the
+declarations described here.
 
 ## Definition inventory
 
-| Planned declaration | Module | Meaning | Status |
+| Declaration | Module | Meaning | Status |
 |---|---|---|---|
 | `hasCliqueOn`, `hasRedClique`, `hasBlueClique` | `Coloring` | exact monochromatic cliques via `IsNClique`; complement is blue | implemented; restriction, clique-free, and neighborhood-extension interfaces compile |
 | `redInteredgeCount`, `redDensity` | `Counting` | paper's `e_R(X,Y)` and `d(X,Y)` | implemented; symmetry, empty-set, bounds, density/count conversion, and restricted-neighborhood sums compile |
@@ -185,11 +185,10 @@ is implemented; do not add empty scaffolding.
 ## Result inventory
 
 Only `c:easy` and `t:main` are exact public-statement targets. Other rows are
-support interfaces: their names and statements are provisional and may be
-replaced when doing so shortens or clarifies the target proofs, provided this
-table and their docstrings record the change.
+support interfaces; their status notes and declaration docstrings record every
+intentional difference from the paper.
 
-| Paper label | Planned declaration | Module | Direct mathematical dependencies | Status / note |
+| Paper label | Declaration | Module | Direct mathematical dependencies | Status / note |
 |---|---|---|---|---|
 | `l:FpAvg` | `sum_excess_redNeighborhood_ge` | `EasyBound` | `excess`; interedge double count; sum of squares | implemented; paper hypotheses are retained in the public signature although the square identity proves a stronger unrestricted statement |
 | `o:easybound` | `ramseyBound_erdosSzekeres` | `EasyBound` | `RamseyBound` recurrence; induction on `k+ℓ` | implemented as the paper's real inequality for `ramseyNumber` |
@@ -219,14 +218,12 @@ table and their docstrings record the change.
 
 ## Dependency milestones
 
-1. **Finite graph interface:** finish `Coloring`, `Counting`, `Ramsey`, and
-   `Candidate`; verify complement/clique and interedge identities.
-2. **Exact easy target:** prove through the printed statement of `c:easy` and
-   expose it as `ramseyNumber_le_easy_optimized`. This is the first
-   end-to-end target and also seeds `𝓡`.
-3. **Book extraction:** settle `chooseReal` and prove `f:binomial`, or replace
-   it with a more direct sufficient bound, then prove the blue-book extraction
-   needed downstream.
+1. **Finite graph interface:** complete. `Coloring`, `Counting`, `Ramsey`, and
+   `Candidate` provide the checked complement/clique and interedge identities.
+2. **Exact easy target:** complete. The printed statement of `c:easy` is
+   exposed as `ramseyNumber_le_easy_optimized` and also seeds `𝓡`.
+3. **Book extraction:** complete. The sufficient `chooseReal` bound and the
+   downstream blue-book extraction are implemented and checked.
 4. **Asymptotic language:** complete. Uniform error witnesses, their
    epsilon/eventual equivalence, the three asymptotic regions, all four parts
    of `o:r`, and the interior-to-eventual-bound bridge are implemented.
@@ -243,10 +240,10 @@ table and their docstrings record the change.
    Stirling estimate supplies an explicit uniform `O(log k)` binomial-entropy
    loss; `main_uniform` and `main` assemble the exact statement of `t:main`.
 
-Each milestone ends with focused file checks and `lake build`, with no `sorry`,
-`admit`, or new axioms.
+Each milestone was checked with focused file checks and `lake build`, with no
+`sorry`, `admit`, or new axioms.
 
-## Scope decisions and remaining proof obligations
+## Scope decisions and obligation status
 
 ### Resolved decisions
 
@@ -312,14 +309,21 @@ Each milestone ends with focused file checks and `lake build`, with no `sorry`,
   `binomialEntropyError k = log k / 2 + 2 = o(k)`.  Combining this witness with
   `uniformRamseyExpBound_final` yields `main_uniform` and the printed theorem
   `main`.
+- **G10 — boundaries and rounding:** resolved. `ramseyBound_zero_left`,
+  `ramseyBound_zero_right`, `ramseyNumber_zero_left`, and
+  `ramseyNumber_zero_right` fix the zero-parameter convention, while
+  `ramseyNumber_spec`, `ramseyNumber_le`, and `ramseyNumber_le_iff` expose the
+  least-bound interface. `redDensity_empty_left` and
+  `redDensity_empty_right` fix empty-input density at zero. The closure and
+  interior boundary behavior is checked in `AsymptoticRegion`, including
+  `asymptoticRegionInterior_subset_asymptoticRegion0`. The floor bridge used by
+  `c:easy` and `UniformRamseyExpWitness.ramseyBound_ceiling` together with
+  `ramseyBound_of_ceiling_le` handle real bounds versus integer graph orders.
+  The public targets retain the paper's positive-parameter hypotheses.
 
 ### Active obligations
 
-- **G10 — boundaries and rounding:** fix behavior for `k=0`, `ℓ=0`, empty
-  finsets, closure boundary coordinates, real thresholds versus integer graph
-  orders, floors/ceilings, and the minimum Ramsey number. The two public target
-  statements carry positive-parameter hypotheses; density remains zero on
-  empty inputs.
+None within the requested scope.
 
 ## Mathlib audit
 
