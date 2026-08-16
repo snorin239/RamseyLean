@@ -1,19 +1,38 @@
-name: Linux build
+name: Lean (staged Linux build)
 
 on:
   push:
     branches: [master]
+    paths:
+      - "**/*.lean"
+      - lakefile.toml
+      - lake-manifest.json
+      - lean-toolchain
+      - ".github/workflows/linux.yml"
+      - ".github/scripts/**"
   pull_request:
     branches: [master]
+    paths:
+      - "**/*.lean"
+      - lakefile.toml
+      - lake-manifest.json
+      - lean-toolchain
+      - ".github/workflows/linux.yml"
+      - ".github/scripts/**"
   workflow_dispatch:
 
 permissions:
   contents: read
 
+concurrency:
+  group: staged-linux-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
-  build:
+  base:
+    name: 1 / 3 - shared prerequisites
     runs-on: ubuntu-24.04
-    timeout-minutes: 120
+    timeout-minutes: 180
 
     steps:
       - uses: actions/checkout@v4
@@ -23,12 +42,187 @@ jobs:
           test ! -e .lake
           test -z "$(git status --porcelain)"
 
-      - name: Build formalization
+      - name: Set up Lean and the Mathlib cache
         uses: leanprover/lean-action@v1
         with:
-          build: true
+          auto-config: false
+          build: false
           use-mathlib-cache: true
           use-github-cache: false
+
+      - name: Build shared certificate prerequisites
+        run: >-
+          bash .github/scripts/lake-build-with-checkpoints.sh
+          +RamseyLean.Numerics.FinalCertificateData.Support
+
+      - name: Pack shared build outputs
+        run: |
+          tar -C .lake/build --exclude='*.setup.json' \
+            -cf "$RUNNER_TEMP/ramsey-base.tar" \
+            lib/lean/RamseyLean ir/RamseyLean
+
+      - name: Upload shared build outputs
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-base
+          path: ${{ runner.temp }}/ramsey-base.tar
+          if-no-files-found: error
+          retention-days: 1
+
+  certificate-shards:
+    name: 2 / 3 - certificate shard (${{ matrix.shard }})
+    needs: base
+    runs-on: ubuntu-24.04
+    timeout-minutes: 330
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - shard: large3
+            targets: >-
+              +RamseyLean.Numerics.FinalCertificateData.Large3
+            prefixes: Large3
+          - shard: large2-small-a
+            targets: >-
+              +RamseyLean.Numerics.FinalCertificateData.Large2
+              +RamseyLean.Numerics.FinalCertificateData.SmallQuotientA
+            prefixes: Large2 SmallQuotientA
+          - shard: middle-small
+            targets: >-
+              +RamseyLean.Numerics.FinalCertificateData.Large1
+              +RamseyLean.Numerics.FinalCertificateData.Middle
+              +RamseyLean.Numerics.FinalCertificateData.SmallQuotientB
+              +RamseyLean.Numerics.FinalCertificateData.SmallSeries
+            prefixes: Large1 Middle SmallQuotientB SmallSeries
+          - shard: crossing
+            targets: >-
+              +RamseyLean.Numerics.FinalCertificateData.Large0
+              +RamseyLean.Numerics.FinalCertificateData.Cap
+              +RamseyLean.Numerics.FinalCertificateData.CrossingCoarse
+              +RamseyLean.Numerics.FinalCertificateData.CrossingFineA
+              +RamseyLean.Numerics.FinalCertificateData.CrossingFineALower
+              +RamseyLean.Numerics.FinalCertificateData.CrossingFineB
+              +RamseyLean.Numerics.FinalCertificateData.CrossingFineBUpper
+            prefixes: >-
+              Large0 Cap CrossingCoarse CrossingFineA CrossingFineALower
+              CrossingFineB CrossingFineBUpper
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Verify fresh checkout
+        run: |
+          test ! -e .lake
+          test -z "$(git status --porcelain)"
+
+      - name: Set up Lean and the Mathlib cache
+        uses: leanprover/lean-action@v1
+        with:
+          auto-config: false
+          build: false
+          use-mathlib-cache: true
+          use-github-cache: false
+
+      - name: Download shared build outputs
+        uses: actions/download-artifact@v4
+        with:
+          name: linux-base
+          path: ${{ runner.temp }}/ramsey-base
+
+      - name: Restore shared build outputs
+        run: |
+          mkdir -p .lake/build
+          tar -C .lake/build \
+            -xf "$RUNNER_TEMP/ramsey-base/ramsey-base.tar"
+
+      - name: Build certificate shard
+        env:
+          LAKE_TARGETS: ${{ matrix.targets }}
+        run: |
+          read -r -a targets <<< "$LAKE_TARGETS"
+          bash .github/scripts/lake-build-with-checkpoints.sh "${targets[@]}"
+
+      - name: Pack certificate shard
+        env:
+          SHARD: ${{ matrix.shard }}
+          OUTPUT_PREFIXES: ${{ matrix.prefixes }}
+        run: |
+          archive="$RUNNER_TEMP/ramsey-$SHARD.tar"
+          root=RamseyLean/Numerics/FinalCertificateData
+          read -r -a prefixes <<< "$OUTPUT_PREFIXES"
+          (
+            cd .lake/build
+            shopt -s nullglob
+            paths=()
+            for prefix in "${prefixes[@]}"; do
+              paths+=(lib/lean/$root/"$prefix"*)
+              paths+=(ir/$root/"$prefix"*.c*)
+            done
+            ((${#paths[@]} > 0))
+            tar -cf "$archive" "${paths[@]}"
+          )
+
+      - name: Upload certificate shard
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-data-${{ matrix.shard }}
+          path: ${{ runner.temp }}/ramsey-${{ matrix.shard }}.tar
+          if-no-files-found: error
+          retention-days: 1
+
+  build:
+    name: 3 / 3 - complete Linux build
+    needs: certificate-shards
+    runs-on: ubuntu-24.04
+    timeout-minutes: 330
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Verify fresh checkout
+        run: |
+          test ! -e .lake
+          test -z "$(git status --porcelain)"
+
+      - name: Set up Lean and the Mathlib cache
+        uses: leanprover/lean-action@v1
+        with:
+          auto-config: false
+          build: false
+          use-mathlib-cache: true
+          use-github-cache: false
+
+      - name: Download shared build outputs
+        uses: actions/download-artifact@v4
+        with:
+          name: linux-base
+          path: ${{ runner.temp }}/ramsey-base
+
+      - name: Download certificate shards
+        uses: actions/download-artifact@v4
+        with:
+          pattern: linux-data-*
+          path: ${{ runner.temp }}/ramsey-shards
+          merge-multiple: true
+
+      - name: Restore staged build outputs
+        run: |
+          mkdir -p .lake/build
+          tar -C .lake/build \
+            -xf "$RUNNER_TEMP/ramsey-base/ramsey-base.tar"
+          shopt -s nullglob
+          archives=("$RUNNER_TEMP"/ramsey-shards/*.tar)
+          test "${#archives[@]}" -eq 4
+          for archive in "${archives[@]}"; do
+            tar -C .lake/build -xf "$archive"
+          done
+          test -f .lake/build/lib/lean/RamseyLean/Numerics/FinalCertificateData/Large3.olean
+          test -f .lake/build/lib/lean/RamseyLean/Numerics/FinalCertificateData/SmallQuotientA.olean
+          test -f .lake/build/lib/lean/RamseyLean/Numerics/FinalCertificateData/SmallSeries.olean
+          test -f .lake/build/lib/lean/RamseyLean/Numerics/FinalCertificateData/CrossingCoarse.olean
+
+      - name: Build the complete formalization
+        run: bash .github/scripts/lake-build-with-checkpoints.sh
 
       - name: Record versions and verify clean tree
         run: |
