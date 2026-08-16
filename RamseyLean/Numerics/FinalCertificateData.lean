@@ -1,0 +1,16 @@
+import RamseyLean.Numerics.FinalCertificateData.SmallSeries
+import RamseyLean.Numerics.FinalCertificateData.SmallQuotientA
+import RamseyLean.Numerics.FinalCertificateData.SmallQuotientB
+import RamseyLean.Numerics.FinalCertificateData.Middle
+import RamseyLean.Numerics.FinalCertificateData.Cap
+import RamseyLean.Numerics.FinalCertificateData.Large0
+import RamseyLean.Numerics.FinalCertificateData.Large1
+import RamseyLean.Numerics.FinalCertificateData.Large2
+import RamseyLean.Numerics.FinalCertificateData.Large3
+import RamseyLean.Numerics.FinalCertificateData.CrossingCoarse
+import RamseyLean.Numerics.FinalCertificateData.CrossingFineB
+import RamseyLean.Numerics.FinalCertificateData.CrossingFineBUpper
+import RamseyLean.Numerics.FinalCertificateData.CrossingFineALower
+import RamseyLean.Numerics.FinalCertificateData.CrossingFineA
+
+/-! Kernel-checked literal data for every final numerical mesh. -/

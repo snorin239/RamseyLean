@@ -1,0 +1,29 @@
+import RamseyLean.Numerics.PreliminaryCertificateChecker
+import RamseyLean.Numerics.PreliminaryCertificateMesh
+
+set_option autoImplicit false
+
+namespace RamseyLean.PreliminaryCertificate.Data.Band2Chunk05
+
+open FixedPointInterval
+
+def iv (lo hi : ℤ) : Interval := ⟨lo, hi⟩
+
+noncomputable def rows : List Row := [
+  ⟨⟨iv (300000000000) (300800000000), iv (90000000000) (90480640000), iv (27000000000) (27216576512), iv (1300000000000) (1300800000000), iv (-117327326121) (-116910694400), iv (-300800000000) (-300000000000), iv (740225803097) (740818220684), iv (-275244032000) (-274500000000), iv (759386785930) (759952004252), iv (227816035779) (228593562880), iv (86540312652) (86918220975), iv (1090395323555) (1090807470905), iv (768757687576) (769230769231), iv (838249787479) (839082669928), iv (251474936243) (252396067115), iv (1134829927093) (1135377089492), iv (1151806898132) (1152482156035), iv (771406437120) (772183964221), iv (1295028188015) (1296333491504), iv (861774850912) (862832094742), iv (965501887575) (967027804531), iv (1250352159991) (1253590530230), iv (2112127010903) (2116422624972), iv (633638103270) (636619925592), iv (739065681927) (741367467976), iv (1561000589629) (1569046882643), iv (445327019246) (450468353910), iv (-220300000000) (-220201548800), iv (-1136372072880) (-1131078196799), iv (874086591949) (874727712478), iv (1136312569533) (1137845808392), iv (-59503347) (6767611593)⟩, ⟨iv (300000000000) (300000000000), iv (1300000000000) (1300000000000), iv (3333333333333) (3333333333334), iv (4333333333332) (4333333333335), iv (262364264456) (262364264484), iv (1136911812642) (1136911812765)⟩⟩,
+]
+
+def inputs : List Interval :=
+  List.range (125 + 1) |>.map
+    (affineCell (scale / 5) (3 * scale / 10) 125) |>.drop 125 |>.take 1
+
+noncomputable def pairs : List (Interval × Row) := inputs.zip rows
+
+noncomputable def checks : Bool :=
+  pairs.all (fun p => checkPositive p.1 p.2)
+
+set_option maxHeartbeats 0 in
+set_option maxRecDepth 100000 in
+theorem checks_true : checks = true := by decide
+
+end RamseyLean.PreliminaryCertificate.Data.Band2Chunk05

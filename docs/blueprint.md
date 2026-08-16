@@ -138,7 +138,13 @@ bookkeeping, not changes to the mathematical statement.
 | `RamseyLean/BookInduction.lean` | `l:FpAvg2`, `l:limit`, `t:bookmain` | `BlueBook`, `AsymptoticRegion` |
 | `RamseyLean/Descent.lean` | `t:bookCor`, `c:gen`, `t:general` | `BookInduction` |
 | `RamseyLean/Frontier.lean` | frontier construction and `lem:frontier` | `AsymptoticRegion` |
-| `RamseyLean/Numerics.lean` | independently derived optimization and kernel-checked slack inequalities | `Frontier` |
+| `RamseyLean/Analysis/CertifiedNumerics.lean` | analytic Taylor enclosures for `exp` and `log` | Mathlib elementary analysis |
+| `RamseyLean/Analysis/NormalizedFunctions.lean` | removable-singularity normalizations used near ratio zero | `Analysis/CertifiedNumerics` |
+| `RamseyLean/Analysis/FixedPointInterval.lean` | scaled-integer outward-rounded interval arithmetic and soundness theorems | `Analysis/NormalizedFunctions` |
+| `RamseyLean/Numerics/Core.lean`, `Ranges.lean` | exact rate functions, retuned parameters, derivatives, concavity, positivity, and unit ranges | `Frontier` |
+| `RamseyLean/Numerics/PreliminarySmooth.lean`, `PreliminaryCertificate*.lean`, `Preliminary.lean` | normalized preliminary slack, checked literal interval rows, continuum coverage, and the first descent application | numerical analysis backend, `Descent` |
+| `RamseyLean/Numerics/FrontierFacts.lean`, `Final*.lean`, `FinalCertificate*.lean` | explicit preliminary frontier formulas, piecewise approximate final frontier, checked branch meshes, and the concrete final certificate | preliminary descent, `Frontier`, numerical analysis backend |
+| `RamseyLean/Numerics.lean` | public assembly of the independently derived final uniform exponential bound | numerical certificate modules |
 | `RamseyLean/Main.lean` | exact public statement `t:main` | `Descent`, `Frontier`, `Numerics` |
 
 This is the proposed structure. Create modules only as their first declaration
@@ -169,7 +175,10 @@ is implemented; do not add empty scaffolding.
 | `BookInductionData`, `BookInductionBounds`, `concreteBookInductionData` | `BookInduction` | abstract finite induction interface and its concrete realization | implemented; the minimum-left-size floor is absorbed by using the schedule at `ℓ - 1` and increasing the final cutoff by one |
 | `redGraphDensity`, `bookCorThreshold` | `Descent` | usual whole-graph red density and the printed square-root order threshold in `t:bookCor` | implemented; whole density uses the degree sum over `N(N-1)`, while the threshold squares to the natural-power product consumed by book induction |
 | `denseCaseExponent`, `exists_small_ratio_erdosSzekeres`, `exists_compl_degree_gt_of_redGraphDensity_lt` | `Descent` | logarithmic book rate, exact small-ratio base case, and sparse-branch blue-degree averaging | implemented; these isolate the analytic and graph interfaces used by `c:gen` and `t:general`, with the small-ratio bound valid for every positive parameter pair and no asymptotic cutoff |
-| `entropy`, `g`, `F` | `Numerics` | paper's `h`, `g_b`, and `F_b` | not started |
+| `entropy`, `gPoly`, `g`, `F`, `FSlope`, `FCurvature` | `Numerics/Core` | paper's `h`, `g_b`, and `F_b`, with explicit first and second derivatives | implemented; derivatives, continuity, positivity, positive slope, and strict concavity compile on the exact parameter rectangle |
+| `preliminaryB`, `finalB`, `preliminaryM`, `finalM`, `numericalP`, `numericalX` | `Numerics/Core`, `Numerics/Ranges` | independently chosen descent parameters and the exact `t:general` first coordinate | implemented; `finalB = 3/100` is the coefficient required by `t:main`, and both stages have checked range and continuity interfaces |
+| `preliminaryNormalizedSlack`, `finalSmallNormalizedSlack`, `finalMiddleNormalizedSlack`, `finalLargeNormalizedSlack` | `Numerics/PreliminarySmooth`, `Numerics/Final` | smooth one-variable forms of the branchwise descent inequalities | implemented algebraic reductions; concrete interval certificates are recorded separately in the result inventory |
+| `FixedPointInterval.Interval`, `FixedPointInterval.Sound` | `Analysis/FixedPointInterval` | exact scaled-integer interval operations, Taylor enclosures, and cast-to-real soundness | implemented; interval endpoints and all checker decisions are exact integers, with outward rounding proved in Lean |
 | `frontierA`, `frontierB`, `frontierY` | `Frontier` | functions in `lem:frontier` | implemented; the outer branches choose parameters from explicit level-set preimages, while public branch lemmas expose the resulting equations for numerical use |
 
 ## Result inventory
@@ -196,8 +205,8 @@ table and their docstrings record the change.
 | `t:general` | `uniformRamseyExpBound_of_descent` | `Descent` | `c:gen`, `t:bookCor`; compactness; weighted Erdős--Szekeres; mean value theorem; strong induction on `ℓ` | **implemented:** the formal statement represents `F'` by an explicit continuous-on-`(0,1]` slope function `D` and `HasDerivAt F (D r) r`, represents the positive codomain of `F` by pointwise nonnegativity, and retains the agreed `ContinuousOn M (Ioc 0 1)` hypothesis; `exists_small_ratio_erdosSzekeres` handles small ratios exactly, while compact uniform continuity of `D`, `exists_compl_degree_gt_of_redGraphDensity_lt`, and a floor-stable mean-value estimate implement the sparse blue-neighborhood induction |
 | `c:gen` | `dense_case_uniform` | `Descent` | `t:bookCor`; compact finite subcover; perturbation from `𝓡` to `𝓡_*` | **implemented and graph-generalized:** `D` is an explicit slope function and the theorem works on any finite vertex type; each ratio chooses frozen nearby book parameters, a relative neighborhood, and a local cutoff, after which a finite subcover supplies one positive density slack and one cutoff; this avoids the manuscript's unproved uniform perturbation of `M` and additionally returns `2δ < D(r)` uniformly |
 | `lem:frontier` | `frontier_mem_asymptoticRegion` | `Frontier` | `o:r(4)`; Ramsey symmetry; strict concavity and range hypotheses | **implemented:** `concaveOn_le_tangentLine` supplies the supporting-line estimate, the two parametric outer points and the hyperbolic middle segment are proved separately, and the printed piecewise `frontierY` is assembled using direct preimage hypotheses formalizing the manuscript's informal endpoint-range language |
-| `lem:numerics` | independently designed optimization lemmas | `Numerics` | exact formulas; kernel-checked analytic or interval inequalities | paper statement replaced by a fresh optimization sufficient for `t:main`; open obligation G5 |
-| `t:main` | `main_uniform`, then `main` | `Main` | descent theorem; frontier information; independent optimization; positivity/concavity; uniform Stirling estimate | **primary exact public target**; open obligations G5 and G9 after combinatorial dependencies |
+| `lem:numerics` | `preliminaryNormalizedSlack_pos`, `uniformRamseyExpBound_preliminary`, `FinalCertificate.finalNumericalCertificate`, then `uniformRamseyExpBound_final` | split `Numerics` modules | exact formulas; kernel-checked analytic and interval inequalities; two applications of `t:general` | **implemented by an independent replacement:** 2,376 preliminary positive-cell rows plus the origin row and 10,227 final rows are checked through proved fixed-point interval soundness; both descent endpoints and the public final uniform bound compile |
+| `t:main` | `main_uniform`, then `main` | `Main` | descent theorem; frontier information; independent optimization; positivity/concavity; uniform Stirling estimate | **primary exact public target**; G5 is resolved and G9 remains open after the combinatorial dependencies |
 
 ### Explicitly excluded results
 
@@ -228,9 +237,11 @@ table and their docstrings record the change.
    `c:gen`, is implemented with the agreed relative continuity hypothesis on
    `M`, and `lem:frontier` provides the piecewise frontier together with
    explicit branch relations for the numerical milestone.
-7. **Independent optimization and main theorem:** independently derive and
-   kernel-check sufficient parameter/slack inequalities, establish the uniform
-   binomial estimate, and assemble the exact statement of `t:main`.
+7. **Independent optimization and main theorem:** the independent numerical
+   optimization is complete through `uniformRamseyExpBound_final`, including
+   both descent applications and all concrete interval rows. Establish the
+   remaining uniform binomial estimate and assemble the exact statement of
+   `t:main`.
 
 Each milestone ends with focused file checks and `lake build`, with no `sorry`,
 `admit`, or new axioms.
@@ -274,6 +285,22 @@ Each milestone ends with focused file checks and `lake build`, with no `sorry`,
   explicit derivative function supply the supporting-line estimates. This
   avoids extending `F` or its derivative to `0` and exposes relational branch
   lemmas for later interval verification.
+- **G5 — independent optimization:** resolved without translating the
+  manuscript's Mathematica certificate or preserving its preliminary
+  constants. The first stage uses `preliminaryB = 3/40` and
+  `preliminaryM r = r * exp (-(9/10) * r - (1/20) * r^2)`; the second uses
+  the exact target coefficient `finalB = 3/100` and
+  `finalM r = r * exp (-(7/10) * r - (13/50) * r^2)`. The frontier branches
+  are reduced to exact polynomial, exponential, and hyperbolic formulas.
+  Removable singularities are normalized analytically, and proved Taylor
+  enclosures feed outward-rounded fixed-point intervals at scale `10^12`.
+  The preliminary certificate has 2,376 positive-cell rows plus a separate
+  origin row; the final certificate has 10,227 rows in 415 kernel-checked
+  chunks. Floating-point sampling chose parameters and meshes only and is not
+  proof evidence. The concrete endpoints
+  `uniformRamseyExpBound_preliminary`,
+  `FinalCertificate.finalNumericalCertificate`, and
+  `uniformRamseyExpBound_final` all compile.
 - **G6:** all of `r:final` is excluded, so neither its endpoint nor its
   unverified AI-generated improvement is a proof obligation.
 - **G7/G8:** the Multicolor section is excluded in full; its typos and omitted
@@ -281,12 +308,6 @@ Each milestone ends with focused file checks and `lake build`, with no `sorry`,
 
 ### Active obligations
 
-- **G5 — independent optimization:** do not translate the Mathematica-based
-  `lem:numerics` certificate mechanically. Redo the optimization for the Lean
-  development and kernel-check sufficient analytic or interval inequalities.
-  The result must recover the exact coefficient function in `t:main`, or first
-  prove a pointwise stronger exponent and then derive the printed bound. The
-  paper's particular intermediate margins are not targets.
 - **G9 — uniform binomial/Stirling estimate:** the small-ratio input to
   `t:general` is now the exact all-parameter weighted Erdős--Szekeres lemma
   `exists_small_ratio_erdosSzekeres`, and `o:r(4)` already uses the explicit
@@ -362,9 +383,10 @@ Useful existing APIs include:
   `interior_maximal`, `interior_prod_eq`, and ordered neighborhoods to turn an
   interior point of `closure 𝓡₀` into a point of `𝓡₀` itself.
 - `norm_num`, `ring_nf`, `linarith`, `nlinarith`, `positivity`, and exact
-  rational inequalities can discharge algebraic leaves. The transcendental
-  part of the independently reconstructed optimization in G5 will additionally
-  need proved analytic bounds or a kernel-checked interval method.
+  rational inequalities discharge algebraic leaves. The G5 transcendental
+  layer uses proved Taylor enclosures for `exp`, `log`, and normalized quotient
+  functions, followed by scaled-integer interval arithmetic whose outward
+  rounding and cast-to-real soundness are proved in Lean.
 
 Re-run a focused `#check`/`#find` audit in each module before fixing imports;
 this inventory records available interfaces, not a promise that every needed
