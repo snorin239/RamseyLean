@@ -1,0 +1,37 @@
+name: Linux build
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 120
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Verify fresh checkout
+        run: |
+          test ! -e .lake
+          test -z "$(git status --porcelain)"
+
+      - name: Build formalization
+        uses: leanprover/lean-action@v1
+        with:
+          build: true
+          use-mathlib-cache: true
+          use-github-cache: false
+
+      - name: Record versions and verify clean tree
+        run: |
+          lean --version
+          lake --version
+          test -z "$(git status --porcelain)"
