@@ -145,7 +145,7 @@ bookkeeping, not changes to the mathematical statement.
 | `RamseyLean/Numerics/PreliminarySmooth.lean`, `PreliminaryCertificate*.lean`, `Preliminary.lean` | normalized preliminary slack, checked literal interval rows, continuum coverage, and the first descent application | numerical analysis backend, `Descent` |
 | `RamseyLean/Numerics/FrontierFacts.lean`, `Final*.lean`, `FinalCertificate*.lean` | explicit preliminary frontier formulas, piecewise approximate final frontier, checked branch meshes, and the concrete final certificate | preliminary descent, `Frontier`, numerical analysis backend |
 | `RamseyLean/Numerics.lean` | public assembly of the independently derived final uniform exponential bound | numerical certificate modules |
-| `RamseyLean/Main.lean` | exact public statement `t:main` | `Descent`, `Frontier`, `Numerics` |
+| `RamseyLean/Main.lean` | uniform binomial-entropy estimate and exact public statement `t:main` | `Numerics`; Mathlib `Stirling` |
 
 This is the proposed structure. Create modules only as their first declaration
 is implemented; do not add empty scaffolding.
@@ -176,6 +176,7 @@ is implemented; do not add empty scaffolding.
 | `redGraphDensity`, `bookCorThreshold` | `Descent` | usual whole-graph red density and the printed square-root order threshold in `t:bookCor` | implemented; whole density uses the degree sum over `N(N-1)`, while the threshold squares to the natural-power product consumed by book induction |
 | `denseCaseExponent`, `exists_small_ratio_erdosSzekeres`, `exists_compl_degree_gt_of_redGraphDensity_lt` | `Descent` | logarithmic book rate, exact small-ratio base case, and sparse-branch blue-degree averaging | implemented; these isolate the analytic and graph interfaces used by `c:gen` and `t:general`, with the small-ratio bound valid for every positive parameter pair and no asymptotic cutoff |
 | `entropy`, `gPoly`, `g`, `F`, `FSlope`, `FCurvature` | `Numerics/Core` | paper's `h`, `g_b`, and `F_b`, with explicit first and second derivatives | implemented; derivatives, continuity, positivity, positive slope, and strict concavity compile on the exact parameter rectangle |
+| `binomialEntropyError`, `uniform_choose_entropy_lower_bound` | `Main` | explicit uniform lower binomial-entropy estimate with logarithmic loss | implemented; global Stirling bounds give the sublinear witness `log k / 2 + 2`, and the one-sided statement is exactly what `t:main` consumes |
 | `preliminaryB`, `finalB`, `preliminaryM`, `finalM`, `numericalP`, `numericalX` | `Numerics/Core`, `Numerics/Ranges` | independently chosen descent parameters and the exact `t:general` first coordinate | implemented; `finalB = 3/100` is the coefficient required by `t:main`, and both stages have checked range and continuity interfaces |
 | `preliminaryNormalizedSlack`, `finalSmallNormalizedSlack`, `finalMiddleNormalizedSlack`, `finalLargeNormalizedSlack` | `Numerics/PreliminarySmooth`, `Numerics/Final` | smooth one-variable forms of the branchwise descent inequalities | implemented algebraic reductions; concrete interval certificates are recorded separately in the result inventory |
 | `FixedPointInterval.Interval`, `FixedPointInterval.Sound` | `Analysis/FixedPointInterval` | exact scaled-integer interval operations, Taylor enclosures, and cast-to-real soundness | implemented; interval endpoints and all checker decisions are exact integers, with outward rounding proved in Lean |
@@ -206,7 +207,7 @@ table and their docstrings record the change.
 | `c:gen` | `dense_case_uniform` | `Descent` | `t:bookCor`; compact finite subcover; perturbation from `𝓡` to `𝓡_*` | **implemented and graph-generalized:** `D` is an explicit slope function and the theorem works on any finite vertex type; each ratio chooses frozen nearby book parameters, a relative neighborhood, and a local cutoff, after which a finite subcover supplies one positive density slack and one cutoff; this avoids the manuscript's unproved uniform perturbation of `M` and additionally returns `2δ < D(r)` uniformly |
 | `lem:frontier` | `frontier_mem_asymptoticRegion` | `Frontier` | `o:r(4)`; Ramsey symmetry; strict concavity and range hypotheses | **implemented:** `concaveOn_le_tangentLine` supplies the supporting-line estimate, the two parametric outer points and the hyperbolic middle segment are proved separately, and the printed piecewise `frontierY` is assembled using direct preimage hypotheses formalizing the manuscript's informal endpoint-range language |
 | `lem:numerics` | `preliminaryNormalizedSlack_pos`, `uniformRamseyExpBound_preliminary`, `FinalCertificate.finalNumericalCertificate`, then `uniformRamseyExpBound_final` | split `Numerics` modules | exact formulas; kernel-checked analytic and interval inequalities; two applications of `t:general` | **implemented by an independent replacement:** 2,376 preliminary positive-cell rows plus the origin row and 10,227 final rows are checked through proved fixed-point interval soundness; both descent endpoints and the public final uniform bound compile |
-| `t:main` | `main_uniform`, then `main` | `Main` | descent theorem; frontier information; independent optimization; positivity/concavity; uniform Stirling estimate | **primary exact public target**; G5 is resolved and G9 remains open after the combinatorial dependencies |
+| `t:main` | `main_uniform`, then `main` | `Main` | `uniformRamseyExpBound_final`; `uniform_choose_entropy_lower_bound`; composition of uniform errors | **implemented exact public target:** one error function is uniform for every positive `ℓ ≤ k`, and `main` expands `g finalB` to the printed polynomial-exponential correction |
 
 ### Explicitly excluded results
 
@@ -237,11 +238,10 @@ table and their docstrings record the change.
    `c:gen`, is implemented with the agreed relative continuity hypothesis on
    `M`, and `lem:frontier` provides the piecewise frontier together with
    explicit branch relations for the numerical milestone.
-7. **Independent optimization and main theorem:** the independent numerical
-   optimization is complete through `uniformRamseyExpBound_final`, including
-   both descent applications and all concrete interval rows. Establish the
-   remaining uniform binomial estimate and assemble the exact statement of
-   `t:main`.
+7. **Independent optimization and main theorem:** complete. The independent
+   numerical optimization reaches `uniformRamseyExpBound_final`; the global
+   Stirling estimate supplies an explicit uniform `O(log k)` binomial-entropy
+   loss; `main_uniform` and `main` assemble the exact statement of `t:main`.
 
 Each milestone ends with focused file checks and `lake build`, with no `sorry`,
 `admit`, or new axioms.
@@ -305,14 +305,16 @@ Each milestone ends with focused file checks and `lake build`, with no `sorry`,
   unverified AI-generated improvement is a proof obligation.
 - **G7/G8:** the Multicolor section is excluded in full; its typos and omitted
   steps are not proof obligations.
+- **G9:** `uniform_choose_entropy_lower_bound` proves the one-sided part of the
+  manuscript's uniform Stirling display that is actually used by `t:main`.
+  Mathlib's global lower factorial bound and the antitonicity of
+  `Stirling.stirlingSeq` give the explicit error
+  `binomialEntropyError k = log k / 2 + 2 = o(k)`.  Combining this witness with
+  `uniformRamseyExpBound_final` yields `main_uniform` and the printed theorem
+  `main`.
 
 ### Active obligations
 
-- **G9 — uniform binomial/Stirling estimate:** the small-ratio input to
-  `t:general` is now the exact all-parameter weighted Erdős--Szekeres lemma
-  `exists_small_ratio_erdosSzekeres`, and `o:r(4)` already uses the explicit
-  uniform witness interface. The remaining obligation is the binomial/Stirling
-  estimate uniformly for every `1≤ℓ≤k`; pointwise asymptotics are insufficient.
 - **G10 — boundaries and rounding:** fix behavior for `k=0`, `ℓ=0`, empty
   finsets, closure boundary coordinates, real thresholds versus integer graph
   orders, floors/ceilings, and the minimum Ramsey number. The two public target
@@ -372,7 +374,10 @@ Useful existing APIs include:
   epsilon/eventual formulation.
 - `Mathlib.Analysis.SpecialFunctions.Stirling`: `Stirling.stirlingSeq`,
   `Stirling.factorial_isEquivalent_stirling`, and logarithmic/global bounds.
-  A new uniform binomial-entropy corollary is still required for G9.
+  `Main` derives the missing upper logarithmic factorial bound from
+  `Stirling.log_stirlingSeq'_antitone`, combines it with
+  `Stirling.le_log_factorial_stirling`, and proves the uniform one-sided
+  binomial-entropy corollary required for G9.
 - `Mathlib.Analysis.SpecialFunctions.BinaryEntropy`: `Real.binEntropy` has
   continuity, derivative, and strict-concavity support. It may shorten the
   entropy part of the uniform binomial estimate, but no matching
