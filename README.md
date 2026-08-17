@@ -112,11 +112,8 @@ as required by the real exponent `k/2`, including when `k` is odd.
 6. **Final assembly.** A uniform one-sided Stirling estimate converts the
    exponential entropy bound into the binomial form stated in Theorem 1.
 
-The revised manuscript and the Lean development agree on the relevant
-parameter conditions: Lemma 11 assumes `0 < p` and `μ < 1`, while Lemma 12
-assumes `0 < μ₀, x₀, y₀, p < 1` and has no extra `p > μ₀` hypothesis. Other
-intermediate results are sometimes strengthened, generalized, or replaced by
-sufficient statements better suited to Lean; see
+The intermediate results from the manuscript are sometimes strengthened,
+generalized, or replaced by sufficient statements better suited to Lean; see
 [`FORMALIZATION.md`](FORMALIZATION.md) for the paper-to-Lean map.
 
 ## Certified numerical optimization
@@ -156,6 +153,11 @@ The full `lake build` succeeds. The Lean source contains no `sorry`, `admit`,
 or user-declared placeholder axioms. For both `RamseyLean.main` and
 `RamseyLean.ramseyNumber_le_easy_optimized`, `#print axioms` reports only
 `propext`, `Classical.choice`, and `Quot.sound`.
+
+The latest clean Ubuntu 24.04 validation completed successfully on August 17,
+2026: all 3,995 Lake jobs succeeded in 5 h 28 min of wall-clock time. The
+[GitHub Actions run](https://github.com/snorin239/RamseyLean/actions/runs/31980959440)
+records the complete build.
 
 ## Attribution
 
