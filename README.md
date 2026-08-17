@@ -3,10 +3,8 @@
 This repository contains a Lean 4 + Mathlib formalization of Theorem 1 and
 Corollary 6 of Parth Gupta, Ndiamé Ndiaye, Sergey Norin, and Louis Wei,
 [*Optimizing the CGMS upper bound on Ramsey
-numbers*](paper/main.pdf). An earlier version is available as
-[arXiv:2407.19026](https://arxiv.org/abs/2407.19026). The bundled PDF is the
-latest version and is the source for all statement wording and numbering
-below.
+numbers*](paper/main.pdf). The bundled PDF is the source for all statement
+wording and numbering below.
 
 ## The statements being formalized
 

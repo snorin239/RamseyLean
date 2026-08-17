@@ -7,19 +7,14 @@ mathematical intent; declarations accepted by Lean are the trusted result.
 
 - Title: *Optimizing the CGMS upper bound on Ramsey numbers*.
 - Authors: Parth Gupta, Ndiamé Ndiaye, Sergey Norin, and Louis Wei.
-- Canonical source: [`paper/main.tex`](../paper/main.tex).
-- Rendered copy: [`paper/main.pdf`](../paper/main.pdf).
-- Bibliography/style: [`paper/snorin2.bib`](../paper/snorin2.bib) and
-  [`paper/halpha.bst`](../paper/halpha.bst).
-- Snapshot recorded: 2026-08-13. The manuscript itself declares no date or
+- Manuscript: [`paper/main.pdf`](../paper/main.pdf).
+- Snapshot recorded: 2026-08-17. The manuscript itself declares no date or
   version identifier.
-- `main.tex` SHA-256:
-  `B137CF708C561373C7AEE225ECEBC8BD5AF9B4221EFC593D2E950B4239E052F1`.
 - `main.pdf` SHA-256:
-  `DFACA5B315B19BB4050B6F1C86D5C0D7B1F543C62E88D293690BC36FE591100F`.
+  `70E4B5D37515372F71864AFDB6D6B2C32ED0AA89D93A700EB15C99FC78707C49`.
 
-If the paper changes, update this section, the inventory, and the checksums in
-[`paper/README.md`](../paper/README.md) in a paper-only commit.
+If the paper changes, replace the bundled PDF and update this snapshot and the
+result inventory in a paper-only commit.
 
 ## Scope and trust boundary
 
@@ -37,13 +32,13 @@ may be generalized, weakened, strengthened, split, combined, or replaced when
 that materially simplifies the two targets. Every difference and its purpose
 must be recorded here and in the declaration docstring.
 
-The entire Multicolor section, all of `r:final`, and the final contextual
-remark are explicitly out of scope. The printed `lem:numerics` margins are
-also not independent targets: the optimization will be redone for the
-formalization, producing whatever kernel-checked inequalities suffice to prove
-`t:main`. Every fact actually used must be proved in Lean or matched to
-Mathlib; no manuscript assertion, computer output, or placeholder axiom is
-trusted by itself.
+Remark 17 and all of Section 5 (Observation 18 through Remark 22) are
+explicitly out of scope. The printed `lem:numerics` margins are also not
+independent targets: the optimization will be redone for the formalization,
+producing whatever kernel-checked inequalities suffice to prove `t:main`.
+Every fact actually used must be proved in Lean or matched to Mathlib; no
+manuscript assertion, computer output, or placeholder axiom is trusted by
+itself.
 
 ## Exact interpretation of the main theorem
 
@@ -199,9 +194,9 @@ intentional difference from the paper.
 | `f:binomial` | `chooseReal_lower_bound_four_fifths` | `Analysis/Binomial` | `chooseReal`; elementary descending-product estimate | **implemented as a sufficient replacement:** under the stronger downstream hypothesis `5b² ≤ σm`, the generalized choose is at least `(4/5)σ^b choose(m,b)`; the paper's more general exponential statement is not formalized |
 | `l:BBook` | `exists_redClique_or_blueBook` | `BlueBook` | sufficient generalized-choose bound; finite powerset averaging and double counting; Ramsey bound `R(k,m)` | **implemented:** omits the unused candidate right side, rewrites `m ≥ 10μ⁻¹b²` equivalently as `10b² ≤ μm`, and strengthens `b ≤ #S` to `#S = b` |
 | `o:r` | `baseline_mem_asymptoticRegion`, `AsymptoticRegion.lower`, `lower_mem_asymptoticRegionInterior`, `mem_asymptoticRegion_of_uniform_bound` | `AsymptoticRegion` | `o:easybound`; closure/interior; Ramsey symmetry; explicit uniform asymptotics | **implemented:** part (4)'s informal two-variable errors are replaced by one uniform-rate witness and its two supporting-line inequalities, exactly the interface needed by `lem:frontier`; `asymptoticRegionInterior_subset_asymptoticRegion0` is an additional downstream bridge |
-| `l:limit` | `tendsto_bookParameter`, `exists_bookExponent` | `BookInduction` | `Real.log`, `Real.rpow`, standard limits | **implemented and generalized** to arbitrary `0<p<1`, `0<μ<1`; the use-oriented corollary selects a natural `r ≥ 2` with `p^(1/r)>μ` and the required strict bound |
-| `t:bookmain` | `Candidate.isGood_of_density_card_product` | `BookInduction` | `exists_bookSlack`, `BookAsymptoticScaleBounds`, `o:r(3)`, `l:BBook`, `l:FpAvg2`, `ramseyNumber_le_pow_first`; strong induction on `k+t` | **implemented:** the cutoff is chosen before the graph and vertex type, hence is graph-independent; the formal theorem strengthens the printed statement by omitting the unnecessary hypothesis `p>μ₀` |
-| `t:bookCor` | `ramseyBound_of_redDensity` | `Descent` | strengthened `t:bookmain`; quantitative excess bipartition; openness of `𝓡_*` | **implemented:** the graph-local theorem is generalized from `Fin N` to any finite vertex type and keeps the printed density and real order hypotheses; instead of the paper's balanced maximum-density cut, it applies `exists_bipartition_excess_ge` at a nearby `p₀ < p`, whose positive excess forces a constant-fraction candidate product, then absorbs that fixed loss by perturbing `y` upward inside `𝓡_*` |
+| `l:limit` | `tendsto_bookParameter`, `exists_bookExponent` | `BookInduction` | `Real.log`, `Real.rpow`, standard limits | **implemented:** the limit theorem uses the weaker minimal hypotheses `0<p` and `μ<1`; the use-oriented corollary uses the paper's unit-interval assumptions and selects a natural `r ≥ 2` with `p^(1/r)>μ` and the required strict bound |
+| `t:bookmain` | `Candidate.isGood_of_density_card_product` | `BookInduction` | `exists_bookSlack`, `BookAsymptoticScaleBounds`, `o:r(3)`, `l:BBook`, `l:FpAvg2`, `ramseyNumber_le_pow_first`; strong induction on `k+t` | **implemented:** the parameter hypotheses match the current manuscript, with `𝓡_*` represented by `asymptoticRegionInterior`; the cutoff is chosen before the graph and vertex type, hence is graph-independent |
+| `t:bookCor` | `ramseyBound_of_redDensity` | `Descent` | `t:bookmain`; quantitative excess bipartition; openness of `𝓡_*` | **implemented:** the graph-local theorem is generalized from `Fin N` to any finite vertex type and keeps the printed density and real order hypotheses; instead of the paper's balanced maximum-density cut, it applies `exists_bipartition_excess_ge` at a nearby `p₀ < p`, whose positive excess forces a constant-fraction candidate product, then absorbs that fixed loss by perturbing `y` upward inside `𝓡_*` |
 | `t:general` | `uniformRamseyExpBound_of_descent` | `Descent` | `c:gen`, `t:bookCor`; compactness; weighted Erdős--Szekeres; mean value theorem; strong induction on `ℓ` | **implemented:** the formal statement represents `F'` by an explicit continuous-on-`(0,1]` slope function `D` and `HasDerivAt F (D r) r`, represents the positive codomain of `F` by pointwise nonnegativity, and retains the agreed `ContinuousOn M (Ioc 0 1)` hypothesis; `exists_small_ratio_erdosSzekeres` handles small ratios exactly, while compact uniform continuity of `D`, `exists_compl_degree_gt_of_redGraphDensity_lt`, and a floor-stable mean-value estimate implement the sparse blue-neighborhood induction |
 | `c:gen` | `dense_case_uniform` | `Descent` | `t:bookCor`; compact finite subcover; perturbation from `𝓡` to `𝓡_*` | **implemented and graph-generalized:** `D` is an explicit slope function and the theorem works on any finite vertex type; each ratio chooses frozen nearby book parameters, a relative neighborhood, and a local cutoff, after which a finite subcover supplies one positive density slack and one cutoff; this avoids the manuscript's unproved uniform perturbation of `M` and additionally returns `2δ < D(r)` uniformly |
 | `lem:frontier` | `frontier_mem_asymptoticRegion` | `Frontier` | `o:r(4)`; Ramsey symmetry; strict concavity and range hypotheses | **implemented:** `concaveOn_le_tangentLine` supplies the supporting-line estimate, the two parametric outer points and the hyperbolic middle segment are proved separately, and the printed piecewise `frontierY` is assembled using direct preimage hypotheses formalizing the manuscript's informal endpoint-range language |
@@ -212,9 +207,8 @@ intentional difference from the paper.
 
 | Paper material | Reason |
 |---|---|
-| `r:final` in full | outside the requested scope; no endpoint or AI-generated claim will be formalized |
-| `o:easybound2`, `l:easy2`, `t:easy2`, `c:easy2` | the entire Multicolor section is outside scope |
-| final unlabeled remark about Balister et al. | contextual literature discussion, not a target |
+| Remark 17 | its preliminary further optimization is outside scope |
+| Section 5 (Observation 18 through Remark 22) | the entire Multicolor section is outside scope |
 
 ## Dependency milestones
 
@@ -247,14 +241,13 @@ Each milestone was checked with focused file checks and `lake build`, with no
 
 ### Resolved decisions
 
-- **G1 — outline prose:** irrelevant to the formalization. The literal
-  `INCOMPLETE` at `paper/main.tex:330` belongs only to the informal outline;
-  it does not qualify or block the detailed proof that follows.
-- **G2 — `p>μ₀`:** the formal `t:bookmain` omits this unnecessary hypothesis.
-  The generalized `exists_bookExponent`, valid for arbitrary `0<p<1` and
-  `0<μ<1`, supplies a natural `r≥2` with both `p^(1/r)>μ` and the strict
-  inequality needed by the moment induction. The theorem docstring records
-  that this omission strengthens the printed lemma.
+- **Lemma 11/12 parameters:** `tendsto_bookParameter` proves the limit under
+  the weaker minimal hypotheses `0<p` and `μ<1`, while
+  `exists_bookExponent` uses the paper's unit-interval assumptions to select a
+  natural `r≥2` with both `p^(1/r)>μ` and the strict inequality needed by the
+  moment induction. `Candidate.isGood_of_density_card_product` uses the same
+  four unit-interval parameters as Lemma 12 and represents `𝓡_*` by
+  `asymptoticRegionInterior`.
 - **Book-induction bookkeeping:** the formal proof replaces the paper's
   iterative deletion with the one-shot `redRegularCore`. Its capped-profile
   argument uses the exact sufficient cutoff
@@ -298,10 +291,9 @@ Each milestone was checked with focused file checks and `lake build`, with no
   `uniformRamseyExpBound_preliminary`,
   `FinalCertificate.finalNumericalCertificate`, and
   `uniformRamseyExpBound_final` all compile.
-- **G6:** all of `r:final` is excluded, so neither its endpoint nor its
-  unverified AI-generated improvement is a proof obligation.
-- **G7/G8:** the Multicolor section is excluded in full; its typos and omitted
-  steps are not proof obligations.
+- **G6:** Remark 17 is excluded, so its preliminary unverified further
+  optimization is not a proof obligation.
+- **G7/G8:** Section 5 (Observation 18 through Remark 22) is excluded in full.
 - **G9:** `uniform_choose_entropy_lower_bound` proves the one-sided part of the
   manuscript's uniform Stirling display that is actually used by `t:main`.
   Mathlib's global lower factorial bound and the antitonicity of

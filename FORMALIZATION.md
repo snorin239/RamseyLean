@@ -2,10 +2,8 @@
 
 This document describes the Lean 4 + Mathlib formalization of Gupta, Ndiaye,
 Norin, and Wei, [*Optimizing the CGMS upper bound on Ramsey
-numbers*](paper/main.pdf). An earlier version is available as
-[arXiv:2407.19026](https://arxiv.org/abs/2407.19026). The bundled PDF is the
-latest version and is the source for all statement wording and numbering in
-this document.
+numbers*](paper/main.pdf). The bundled PDF is the source for all statement
+wording and numbering in this document.
 
 The paper supplies the mathematical intent; the declarations accepted by Lean
 are the checked statements.
@@ -60,8 +58,8 @@ The proof has six main stages:
 | Fact 8 | `chooseReal_lower_bound_four_fifths` | Sufficient replacement in the stronger parameter regime used by Lemma 9. |
 | Lemma 9 | `exists_redClique_or_blueBook` | Blue-book extraction by finite averaging and double counting. |
 | Observation 10 | `baseline_mem_asymptoticRegion`, `AsymptoticRegion.lower`, `lower_mem_asymptoticRegionInterior`, `mem_asymptoticRegion_of_uniform_bound` | The four properties of the asymptotic region, with explicit uniform errors. |
-| Lemma 11 | `tendsto_bookParameter`, `exists_bookExponent` | Limit with the paper's hypotheses `0 < p` and `μ < 1`; the use-oriented corollary selects a natural exponent `r ≥ 2` for Lemma 12. |
-| Lemma 12 | `Candidate.isGood_of_density_card_product` | Main moment/book induction with the printed parameter conditions, generalized to any finite vertex type with a graph-independent cutoff. |
+| Lemma 11 | `tendsto_bookParameter`, `exists_bookExponent` | Exponent-selection limit. The limit theorem uses only `0 < p` and `μ < 1`; the use-oriented corollary imposes the paper's unit-interval assumptions and selects a natural exponent `r ≥ 2` for Lemma 12. |
+| Lemma 12 | `Candidate.isGood_of_density_card_product` | Main moment/book induction with the paper's parameter conditions; `𝓡_*` is represented by `asymptoticRegionInterior`, and the cutoff is graph-independent. |
 | Theorem 13 | `ramseyBound_of_redDensity` | Dense-coloring consequence, generalized to any finite vertex type. |
 | Claim 14.1 | `dense_case_uniform` | One density slack and cutoff obtained uniformly by compactness. |
 | Theorem 14 | `uniformRamseyExpBound_of_descent` | General dense/sparse descent with an explicit derivative function. |
