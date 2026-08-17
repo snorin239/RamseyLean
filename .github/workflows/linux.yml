@@ -35,7 +35,7 @@ jobs:
     timeout-minutes: 180
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Verify fresh checkout
         run: |
@@ -62,7 +62,7 @@ jobs:
             lib/lean/RamseyLean ir/RamseyLean
 
       - name: Upload shared build outputs
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: linux-base
           path: ${{ runner.temp }}/ramsey-base.tar
@@ -108,7 +108,7 @@ jobs:
               CrossingFineB CrossingFineBUpper
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Verify fresh checkout
         run: |
@@ -124,7 +124,7 @@ jobs:
           use-github-cache: false
 
       - name: Download shared build outputs
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: linux-base
           path: ${{ runner.temp }}/ramsey-base
@@ -163,7 +163,7 @@ jobs:
           )
 
       - name: Upload certificate shard
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: linux-data-${{ matrix.shard }}
           path: ${{ runner.temp }}/ramsey-${{ matrix.shard }}.tar
@@ -177,7 +177,7 @@ jobs:
     timeout-minutes: 330
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Verify fresh checkout
         run: |
@@ -193,13 +193,13 @@ jobs:
           use-github-cache: false
 
       - name: Download shared build outputs
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: linux-base
           path: ${{ runner.temp }}/ramsey-base
 
       - name: Download certificate shards
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           pattern: linux-data-*
           path: ${{ runner.temp }}/ramsey-shards
